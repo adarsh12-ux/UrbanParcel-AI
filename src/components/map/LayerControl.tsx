@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layers, Eye, EyeOff, CheckSquare, Square, RefreshCw } from 'lucide-react';
+import { Layers, Eye, EyeOff, X } from 'lucide-react';
 
 export interface MapLayersState {
   droneImagery: boolean;
@@ -16,13 +16,15 @@ interface LayerControlProps {
   onToggleLayer: (layerKey: keyof MapLayersState) => void;
   basemap: 'satellite' | 'streets' | 'dark';
   onSelectBasemap: (basemap: 'satellite' | 'streets' | 'dark') => void;
+  onClose?: () => void;
 }
 
 export const LayerControl: React.FC<LayerControlProps> = ({
   layers,
   onToggleLayer,
   basemap,
-  onSelectBasemap
+  onSelectBasemap,
+  onClose
 }) => {
   const layerItems: { key: keyof MapLayersState; label: string; color: string; count?: string }[] = [
     { key: 'droneImagery', label: 'Drone Orthomosaic Imagery', color: 'bg-cyan-500', count: 'GeoTIFF' },
@@ -35,7 +37,7 @@ export const LayerControl: React.FC<LayerControlProps> = ({
   ];
 
   return (
-    <div className="bg-slate-950/90 border border-slate-800 rounded-xl p-4 space-y-4 shadow-2xl backdrop-blur-md text-xs w-64">
+    <div className="bg-slate-950/95 border border-slate-800 rounded-xl p-3.5 sm:p-4 space-y-3 sm:space-y-4 shadow-2xl backdrop-blur-md text-xs w-[280px] sm:w-64 max-w-[calc(100vw-2rem)] overflow-y-auto max-h-[calc(100vh-140px)]">
       {/* Basemap Selection */}
       <div className="space-y-2 border-b border-slate-800 pb-3">
         <div className="flex items-center justify-between font-semibold text-slate-300">
@@ -43,6 +45,15 @@ export const LayerControl: React.FC<LayerControlProps> = ({
             <Layers className="w-3.5 h-3.5 text-cyan-400" />
             <span>GIS Basemap Tile</span>
           </span>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="text-slate-400 hover:text-slate-200 p-1 rounded-lg hover:bg-slate-900 transition-colors"
+              aria-label="Close Layer Control"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
         <div className="grid grid-cols-3 gap-1 bg-slate-900 p-1 rounded-lg border border-slate-800">
           {(['satellite', 'streets', 'dark'] as const).map((mode) => (

@@ -103,18 +103,38 @@ export const GISMapPage: React.FC = () => {
           </form>
         </div>
 
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex items-center gap-1.5 sm:gap-2 text-xs">
           <button
             onClick={() => setLayerControlOpen(!layerControlOpen)}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 font-medium transition-colors"
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg border text-xs font-medium transition-colors ${
+              layerControlOpen
+                ? 'bg-cyan-950/80 border-cyan-800 text-cyan-300'
+                : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'
+            }`}
           >
             <SlidersHorizontal className="w-3.5 h-3.5 text-cyan-400" />
             <span className="hidden sm:inline">Layers Control</span>
+            <span className="sm:hidden">Layers</span>
           </button>
+
+          {selectedParcel && (
+            <button
+              onClick={() => setPanelOpen(!panelOpen)}
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg border text-xs font-medium transition-colors ${
+                panelOpen
+                  ? 'bg-cyan-950/80 border-cyan-800 text-cyan-300'
+                  : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'
+              }`}
+            >
+              <MapPin className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">Parcel Info</span>
+              <span className="sm:hidden">Info</span>
+            </button>
+          )}
 
           <button
             onClick={() => navigate(`/projects/${projectId}/analysis`)}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 hover:border-slate-700 text-cyan-300 font-medium transition-colors"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 hover:border-slate-700 text-cyan-300 font-medium transition-colors"
           >
             <BarChart3 className="w-3.5 h-3.5 text-cyan-400" />
             <span className="hidden sm:inline">AI Analysis</span>
@@ -122,10 +142,11 @@ export const GISMapPage: React.FC = () => {
 
           <button
             onClick={() => navigate(`/projects/${projectId}/export`)}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-medium transition-colors shadow-xs"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-medium transition-colors shadow-xs"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>Export GIS</span>
+            <span className="hidden sm:inline">Export GIS</span>
+            <span className="sm:hidden">Export</span>
           </button>
         </div>
       </div>
@@ -149,19 +170,20 @@ export const GISMapPage: React.FC = () => {
 
         {/* Floating Layer Control Panel Left */}
         {layerControlOpen && (
-          <div className="absolute top-4 left-4 z-10 animate-fade-in">
+          <div className="absolute top-2 left-2 sm:top-4 sm:left-4 z-10 animate-fade-in max-w-[calc(100vw-1rem)]">
             <LayerControl
               layers={layersState}
               onToggleLayer={handleToggleLayer}
               basemap={basemap}
               onSelectBasemap={setBasemap}
+              onClose={() => setLayerControlOpen(false)}
             />
           </div>
         )}
 
         {/* Selected Parcel Details Panel Right */}
         {panelOpen && selectedParcel && (
-          <div className="absolute top-4 right-4 z-10 animate-fade-in">
+          <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10 animate-fade-in max-w-[calc(100vw-1rem)]">
             <ParcelInfoPanel
               parcel={selectedParcel}
               onClose={() => setPanelOpen(false)}

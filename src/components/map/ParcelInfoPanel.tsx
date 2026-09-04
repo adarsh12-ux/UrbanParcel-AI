@@ -19,7 +19,7 @@ export const ParcelInfoPanel: React.FC<ParcelInfoPanelProps> = ({
 
   if (!parcel) {
     return (
-      <div className="bg-slate-950/90 border border-slate-800 rounded-xl p-6 text-center text-slate-400 text-xs shadow-2xl backdrop-blur-md w-80 space-y-3">
+      <div className="bg-slate-950/90 border border-slate-800 rounded-xl p-4 sm:p-6 text-center text-slate-400 text-xs shadow-2xl backdrop-blur-md w-[280px] sm:w-80 max-w-[calc(100vw-2rem)] space-y-3">
         <div className="w-12 h-12 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center mx-auto text-cyan-400">
           <MapPin className="w-6 h-6 animate-pulse" />
         </div>
@@ -34,7 +34,7 @@ export const ParcelInfoPanel: React.FC<ParcelInfoPanelProps> = ({
   }
 
   return (
-    <div className="bg-slate-950/95 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-2xl backdrop-blur-md w-80 max-h-[calc(100vh-140px)] overflow-y-auto">
+    <div className="bg-slate-950/95 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3 sm:space-y-4 shadow-2xl backdrop-blur-md w-[280px] sm:w-80 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-140px)] overflow-y-auto">
       {/* Panel Header */}
       <div className="flex items-center justify-between border-b border-slate-800 pb-3">
         <div>

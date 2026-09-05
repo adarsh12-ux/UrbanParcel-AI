@@ -28,21 +28,20 @@ export const AnalysisPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const projectId = id || 'proj-001';
-
   const [metrics, setMetrics] = useState<AnalysisMetrics | null>(null);
   const [selectedComparison, setSelectedComparison] = useState<GroundTruthComparison | null>(null);
 
   useEffect(() => {
     async function loadAnalysis() {
-      const data = await api.getAnalysis(projectId);
+      if (!id) return;
+      const data = await api.getAnalysis(id);
       setMetrics(data);
       if (data.groundTruthComparisons.length > 0) {
         setSelectedComparison(data.groundTruthComparisons[0]);
       }
     }
     loadAnalysis();
-  }, [projectId]);
+  }, [id]);
 
   if (!metrics) {
     return (
@@ -80,7 +79,7 @@ export const AnalysisPage: React.FC = () => {
         </div>
 
         <button
-          onClick={() => navigate(`/projects/${projectId}/map`)}
+          onClick={() => navigate(id ? `/projects/${id}/map` : '/projects')}
           className="px-3.5 py-2 rounded bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs shrink-0 transition-colors cursor-pointer"
         >
           Return to GIS Workspace

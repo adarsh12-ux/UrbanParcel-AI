@@ -20,7 +20,7 @@ interface SidebarProps {
   activeProjectId?: string;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, activeProjectId = 'proj-001' }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, activeProjectId }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -45,19 +45,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, activeProject
     },
     {
       name: 'Interactive GIS Map',
-      path: `/projects/${activeProjectId}/map`,
+      path: activeProjectId ? `/projects/${activeProjectId}/map` : '/projects',
       icon: Map,
       section: 'SPATIAL WORKSPACE'
     },
     {
       name: 'AI Feature Analytics',
-      path: `/projects/${activeProjectId}/analysis`,
+      path: activeProjectId ? `/projects/${activeProjectId}/analysis` : '/projects',
       icon: BarChart3,
       section: 'SPATIAL WORKSPACE'
     },
     {
       name: 'Cadastral Export & Reports',
-      path: `/projects/${activeProjectId}/export`,
+      path: activeProjectId ? `/projects/${activeProjectId}/export` : '/projects',
       icon: Download,
       section: 'OUTPUT'
     }

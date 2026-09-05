@@ -52,7 +52,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, activeProject:
       <Sidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
-        activeProjectId={activeProject?.id || 'proj-001'}
+        activeProjectId={activeProject?.id}
       />
 
       <div className="lg:pl-64 flex flex-col flex-1 min-h-screen">

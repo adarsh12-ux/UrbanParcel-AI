@@ -7,7 +7,6 @@ import { Toast, ToastMessage } from '../components/common/Toast';
 
 export const ExportPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const projectId = id || 'proj-001';
 
   const [project, setProject] = useState<Project | null>(null);
   const [parcels, setParcels] = useState<Parcel[]>([]);
@@ -25,15 +24,16 @@ export const ExportPage: React.FC = () => {
 
   useEffect(() => {
     async function loadData() {
+      if (!id) return;
       const [projData, parcelData] = await Promise.all([
-        api.getProject(projectId),
-        api.getParcels(projectId)
+        api.getProject(id),
+        api.getParcels(id)
       ]);
       setProject(projData);
       setParcels(parcelData);
     }
     loadData();
-  }, [projectId]);
+  }, [id]);
 
   const handleDownload = () => {
     const projName = project?.name.replace(/\s+/g, '_') || 'Urban_Zone_01';

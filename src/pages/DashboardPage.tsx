@@ -32,6 +32,10 @@ export const DashboardPage: React.FC = () => {
     loadData();
   }, []);
 
+  const totalArea = projects.reduce((acc, p) => acc + (p.surveyAreaSqKm || 0), 0);
+  const totalParcels = projects.reduce((acc, p) => acc + (p.parcelCount || 0), 0);
+  const totalFeatures = projects.reduce((acc, p) => acc + (p.buildingCount || 0) + (p.roadSegmentCount || 0), 0);
+
   return (
     <div className="p-4 sm:p-6 lg:p-7 space-y-6 max-w-7xl mx-auto w-full">
       {/* Compact Institutional Page Header */}
@@ -71,35 +75,35 @@ export const DashboardPage: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Cadastral Projects"
-          value="12"
+          value={String(projects.length)}
           subtitle="Municipal survey zones"
           icon={Layers}
           color="indigo"
-          trend="+2 survey runs active"
+          trend={`${projects.filter(p => p.status === 'Processing').length} in processing`}
         />
         <StatCard
           title="Orthomosaic Area"
-          value="24.8 km²"
+          value={`${totalArea > 0 ? totalArea.toFixed(1) : '0.0'} km²`}
           subtitle="UAV drone coverage"
           icon={MapPin}
           color="cyan"
-          trend="3.2 cm/px avg GSD"
+          trend="3.2 cm/px target GSD"
         />
         <StatCard
           title="Delineated Parcels"
-          value="4,821"
+          value={totalParcels.toLocaleString()}
           subtitle="Cadastral boundaries extracted"
           icon={FileCheck2}
           color="emerald"
-          trend="94.7% mean AI confidence"
+          trend="Vector regularized"
         />
         <StatCard
           title="Extracted Features"
-          value="8,643"
+          value={totalFeatures.toLocaleString()}
           subtitle="Building footprints & roads"
           icon={Box}
           color="amber"
-          trend="Vector regularized"
+          trend="Topological layers"
         />
       </div>
 
@@ -129,6 +133,17 @@ export const DashboardPage: React.FC = () => {
             {[1, 2, 3].map((i) => (
               <div key={i} className="h-44 rounded bg-white border border-slate-200 animate-pulse" />
             ))}
+          </div>
+        ) : projects.length === 0 ? (
+          <div className="bg-white border border-slate-200 rounded p-8 text-center space-y-3">
+            <p className="text-xs text-slate-500">No cadastral survey projects created yet in the database.</p>
+            <button
+              onClick={() => navigate('/projects/new')}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-teal-700 hover:bg-teal-600 text-white text-xs font-medium cursor-pointer shadow-xs"
+            >
+              <PlusCircle className="w-3.5 h-3.5" />
+              <span>Initiate First Survey Project</span>
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

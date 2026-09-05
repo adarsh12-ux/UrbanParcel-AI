@@ -12,9 +12,9 @@ export const GISMapPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const projectId = id || 'proj-001';
-
   const [project, setProject] = useState<Project | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [parcels, setParcels] = useState<Parcel[]>([]);
   const [buildings, setBuildings] = useState<Building[]>([]);
   const [roads, setRoads] = useState<Road[]>([]);
@@ -38,32 +38,51 @@ export const GISMapPage: React.FC = () => {
 
   useEffect(() => {
     async function loadGISData() {
-      const [projData, parcelsData, buildingsData, roadsData] = await Promise.all([
-        api.getProject(projectId),
-        api.getParcels(projectId),
-        api.getBuildings(projectId),
-        api.getRoads(projectId)
-      ]);
-
-      setProject(projData);
-      setParcels(parcelsData);
-      setBuildings(buildingsData);
-      setRoads(roadsData);
-
-      // Check URL query for parcel ID search
-      const parcelSearch = searchParams.get('search');
-      if (parcelSearch) {
-        const found = parcelsData.find(p => p.id.toLowerCase() === parcelSearch.toLowerCase());
-        if (found) {
-          setSelectedParcel(found);
-          setSearchQuery(parcelSearch);
+      if (!id) {
+        setError('No project selected.');
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      setError(null);
+      try {
+        const projData = await api.getProject(id);
+        if (!projData) {
+          setError(`Survey project "${id}" not found in database.`);
+          setLoading(false);
+          return;
         }
-      } else if (parcelsData.length > 0) {
-        setSelectedParcel(parcelsData[0]);
+        setProject(projData);
+        const [parcelsData, buildingsData, roadsData] = await Promise.all([
+          api.getParcels(id),
+          api.getBuildings(id),
+          api.getRoads(id)
+        ]);
+
+        setParcels(parcelsData);
+        setBuildings(buildingsData);
+        setRoads(roadsData);
+
+        // Check URL query for parcel ID search
+        const parcelSearch = searchParams.get('search');
+        if (parcelSearch) {
+          const found = parcelsData.find(p => p.id.toLowerCase() === parcelSearch.toLowerCase());
+          if (found) {
+            setSelectedParcel(found);
+            setSearchQuery(parcelSearch);
+          }
+        } else if (parcelsData.length > 0) {
+          setSelectedParcel(parcelsData[0]);
+        }
+      } catch (err: any) {
+        console.error('Failed to load GIS data:', err);
+        setError(err?.message || 'Error loading project from Supabase.');
+      } finally {
+        setLoading(false);
       }
     }
     loadGISData();
-  }, [projectId, searchParams]);
+  }, [id, searchParams]);
 
   const handleToggleLayer = (key: keyof MapLayersState) => {
     setLayersState(prev => ({ ...prev, [key]: !prev[key] }));
@@ -132,7 +151,7 @@ export const GISMapPage: React.FC = () => {
           )}
 
           <button
-            onClick={() => navigate(`/projects/${projectId}/analysis`)}
+            onClick={() => navigate(`/projects/${id}/analysis`)}
             className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium transition-colors cursor-pointer"
           >
             <BarChart3 className="w-3.5 h-3.5 text-teal-700" />
@@ -140,7 +159,7 @@ export const GISMapPage: React.FC = () => {
           </button>
 
           <button
-            onClick={() => navigate(`/projects/${projectId}/export`)}
+            onClick={() => navigate(`/projects/${id}/export`)}
             className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-teal-700 hover:bg-teal-600 text-white font-medium transition-colors shadow-xs cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
@@ -186,7 +205,7 @@ export const GISMapPage: React.FC = () => {
             <ParcelInfoPanel
               parcel={selectedParcel}
               onClose={() => setPanelOpen(false)}
-              projectId={projectId}
+              projectId={id || ''}
             />
           </div>
         )}

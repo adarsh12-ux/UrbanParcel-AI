@@ -22,21 +22,19 @@ export const ParcelDetailPage: React.FC = () => {
   const { id, parcelId } = useParams<{ id: string; parcelId: string }>();
   const navigate = useNavigate();
 
-  const projectId = id || 'proj-001';
-  const targetParcelId = parcelId || 'UP-1001';
-
   const [parcel, setParcel] = useState<Parcel | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadParcel() {
+      if (!id || !parcelId) return;
       setLoading(true);
-      const data = await api.getParcel(projectId, targetParcelId);
+      const data = await api.getParcel(id, parcelId);
       setParcel(data);
       setLoading(false);
     }
     loadParcel();
-  }, [projectId, targetParcelId]);
+  }, [id, parcelId]);
 
   if (loading || !parcel) {
     return (
@@ -50,7 +48,7 @@ export const ParcelDetailPage: React.FC = () => {
     <div className="p-4 sm:p-6 lg:p-7 max-w-5xl mx-auto w-full space-y-5">
       {/* Back Navigation */}
       <button
-        onClick={() => navigate(`/projects/${projectId}/map`)}
+        onClick={() => navigate(id ? `/projects/${id}/map` : '/projects')}
         className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
       >
         <ArrowLeft className="w-3.5 h-3.5" />
@@ -77,7 +75,7 @@ export const ParcelDetailPage: React.FC = () => {
 
         <div className="flex items-center gap-2 shrink-0">
           <button
-            onClick={() => navigate(`/projects/${projectId}/analysis`)}
+            onClick={() => navigate(id ? `/projects/${id}/analysis` : '/projects')}
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium border border-slate-200 transition-colors cursor-pointer"
           >
             <BarChart3 className="w-3.5 h-3.5 text-teal-700" />
@@ -85,7 +83,7 @@ export const ParcelDetailPage: React.FC = () => {
           </button>
 
           <button
-            onClick={() => navigate(`/projects/${projectId}/export`)}
+            onClick={() => navigate(id ? `/projects/${id}/export` : '/projects')}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded bg-teal-700 hover:bg-teal-600 text-white text-xs font-medium shadow-xs transition-colors cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
@@ -182,7 +180,7 @@ export const ParcelDetailPage: React.FC = () => {
           </div>
 
           <button
-            onClick={() => navigate(`/projects/${projectId}/map?search=${parcel.id}`)}
+            onClick={() => navigate(id ? `/projects/${id}/map?search=${parcel.id}` : '/projects')}
             className="w-full py-2 rounded bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium transition-colors cursor-pointer"
           >
             Locate in Spatial Workspace

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Layers, MapPin, ArrowRight, ArrowLeft, Globe, Compass } from 'lucide-react';
+import { Layers, MapPin, ArrowRight, ArrowLeft, Globe, Compass, AlertCircle } from 'lucide-react';
 import { api } from '../services/api';
 
 export const CreateProjectPage: React.FC = () => {
@@ -11,6 +11,7 @@ export const CreateProjectPage: React.FC = () => {
   const [surveyAreaSqKm, setSurveyAreaSqKm] = useState<number>(4.2);
   const [crs, setCrs] = useState('WGS 84 / EPSG:4326');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [coordinates, setCoordinates] = useState<[number, number]>([16.5062, 80.6480]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -18,6 +19,7 @@ export const CreateProjectPage: React.FC = () => {
     if (!name.trim() || !location.trim()) return;
 
     setLoading(true);
+    setError(null);
     try {
       const project = await api.createProject({
         name,
@@ -27,8 +29,9 @@ export const CreateProjectPage: React.FC = () => {
         centerCoordinates: coordinates
       });
       navigate(`/projects/${project.id}/upload`);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      setError(err?.message || 'Failed to create survey project in database.');
     } finally {
       setLoading(false);
     }
@@ -53,6 +56,13 @@ export const CreateProjectPage: React.FC = () => {
         </h1>
         <p className="text-xs text-slate-500">Step 1 of 4: Define administrative survey jurisdiction, target bounding coordinates, and projection CRS.</p>
       </div>
+
+      {error && (
+        <div className="p-3 bg-rose-50 border border-rose-200 rounded flex items-start gap-2 text-xs text-rose-800">
+          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+          <span className="leading-tight">{error}</span>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

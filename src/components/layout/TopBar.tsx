@@ -37,8 +37,10 @@ export const TopBar: React.FC<TopBarProps> = ({
     if (query.startsWith('UP-') || query.startsWith('P-') || query.startsWith('SY')) {
       if (activeProject) {
         navigate(`/projects/${activeProject.id}/map?search=${encodeURIComponent(query)}`);
+      } else if (projects.length > 0) {
+        navigate(`/projects/${projects[0].id}/map?search=${encodeURIComponent(query)}`);
       } else {
-        navigate(`/projects/proj-001/map?search=${encodeURIComponent(query)}`);
+        navigate('/projects');
       }
     } else {
       const match = projects.find(p => p.name.toLowerCase().includes(query.toLowerCase()) || p.location.toLowerCase().includes(query.toLowerCase()));

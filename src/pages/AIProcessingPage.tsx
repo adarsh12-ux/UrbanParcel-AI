@@ -228,7 +228,7 @@ export const AIProcessingPage: React.FC = () => {
       {/* Completion Action */}
       <div className="flex justify-end pt-3 border-t border-slate-200">
         <button
-          onClick={() => navigate(`/projects/${id || 'proj-001'}/map`)}
+          onClick={() => navigate(id ? `/projects/${id}/map` : '/projects')}
           disabled={!isCompleted}
           className={`inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded font-medium text-xs shadow-xs transition-colors ${
             isCompleted

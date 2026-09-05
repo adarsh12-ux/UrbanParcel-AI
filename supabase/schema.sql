@@ -181,6 +181,60 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
+-- 8. Create PROJECTS Table
+CREATE TABLE IF NOT EXISTS public.projects (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  location TEXT NOT NULL,
+  survey_area_sq_km NUMERIC NOT NULL DEFAULT 1.0,
+  crs TEXT NOT NULL DEFAULT 'WGS 84 / EPSG:4326',
+  status TEXT NOT NULL DEFAULT 'Draft' CHECK (status IN ('Draft', 'Processing', 'Completed', 'Failed')),
+  parcel_count INTEGER NOT NULL DEFAULT 0,
+  building_count INTEGER NOT NULL DEFAULT 0,
+  road_segment_count INTEGER NOT NULL DEFAULT 0,
+  thumbnail TEXT,
+  center_lat NUMERIC NOT NULL DEFAULT 16.5062,
+  center_lng NUMERIC NOT NULL DEFAULT 80.6480,
+  gsd_cm_per_px NUMERIC DEFAULT 3.2,
+  imagery_file_name TEXT,
+  imagery_file_size_mb NUMERIC,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Performance Indexes for projects
+CREATE INDEX IF NOT EXISTS idx_projects_status ON public.projects(status);
+CREATE INDEX IF NOT EXISTS idx_projects_created_at ON public.projects(created_at DESC);
+
+-- Enable RLS for projects
+ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
+
+-- Allow authenticated and anon users with API key to read and manage survey projects
+CREATE POLICY "projects_select_all"
+  ON public.projects
+  FOR SELECT
+  TO anon, authenticated
+  USING (true);
+
+CREATE POLICY "projects_insert_all"
+  ON public.projects
+  FOR INSERT
+  TO anon, authenticated
+  WITH CHECK (true);
+
+CREATE POLICY "projects_update_all"
+  ON public.projects
+  FOR UPDATE
+  TO anon, authenticated
+  USING (true)
+  WITH CHECK (true);
+
+CREATE POLICY "projects_delete_all"
+  ON public.projects
+  FOR DELETE
+  TO anon, authenticated
+  USING (true);
+
 -- ========================================================================
 -- Sample Initial Admin Setup (Run in Supabase SQL Editor to seed 1st Admin)
 -- ========================================================================

@@ -130,6 +130,23 @@ export const api = {
     return mapDbProject(data);
   },
 
+  // Delete project from real Supabase database
+  async deleteProject(id: string): Promise<void> {
+    if (!isSupabaseConfigured() || !supabase) {
+      throw new Error('Supabase is not configured. Please check your .env file.');
+    }
+
+    const { error } = await supabase
+      .from('projects')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error(`Failed to delete project ${id} from Supabase:`, error);
+      throw new Error(`Database error deleting project: ${error.message}`);
+    }
+  },
+
   // Upload drone imagery metadata to real Supabase database
   async uploadImagery(projectId: string, fileName: string, fileSizeMb: number): Promise<Project> {
     if (!isSupabaseConfigured() || !supabase) {

@@ -20,29 +20,35 @@ export const StatCard: React.FC<StatCardProps> = ({
   trendPositive = true,
   color = 'cyan'
 }) => {
-  const colorMap = {
-    cyan: 'bg-navy-50 border-navy-100 text-navy-800',
-    emerald: 'bg-forest-50 border-forest-100 text-forest-800',
-    indigo: 'bg-navy-50 border-navy-100 text-navy-700',
-    amber: 'bg-amber-50 border-amber-200 text-amber-800'
+  const accentColors = {
+    cyan: 'border-l-teal-700 bg-teal-50 text-teal-800',
+    emerald: 'border-l-emerald-700 bg-emerald-50 text-emerald-800',
+    indigo: 'border-l-slate-700 bg-slate-100 text-slate-800',
+    amber: 'border-l-amber-700 bg-amber-50 text-amber-800'
+  };
+
+  const iconColors = {
+    cyan: 'bg-teal-50 text-teal-700 border-teal-100',
+    emerald: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+    indigo: 'bg-slate-100 text-slate-700 border-slate-200',
+    amber: 'bg-amber-50 text-amber-700 border-amber-100'
   };
 
   return (
-    <div className="relative bg-white border border-line rounded-sm p-5 shadow-[0_1px_2px_rgba(12,35,64,0.04)]">
-      <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-navy-900" />
-      <div className="flex items-center justify-between pl-1">
-        <div>
-          <p className="text-xs font-semibold text-muted uppercase tracking-wider">{title}</p>
-          <h3 className="text-2xl font-bold text-ink mt-1 font-mono tracking-tight">{value}</h3>
-          {subtitle && <p className="text-xs text-muted mt-1">{subtitle}</p>}
+    <div className={`relative bg-white border border-slate-200 rounded p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] border-l-3 ${accentColors[color].split(' ')[0]}`}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-1">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">{title}</p>
+          <h3 className="text-2xl font-bold font-mono text-slate-900 tracking-tight">{value}</h3>
+          {subtitle && <p className="text-[11px] text-slate-500 leading-tight">{subtitle}</p>}
           {trend && (
-            <p className={`text-xs mt-2 font-medium ${trendPositive ? 'text-forest-700' : 'text-amber-700'}`}>
+            <p className={`text-[10px] font-mono mt-1.5 font-medium ${trendPositive ? 'text-emerald-700' : 'text-amber-700'}`}>
               {trend}
             </p>
           )}
         </div>
-        <div className={`p-3 rounded-sm border ${colorMap[color]}`}>
-          <Icon className="w-5 h-5" />
+        <div className={`p-2 rounded border shrink-0 ${iconColors[color]}`}>
+          <Icon className="w-4 h-4" />
         </div>
       </div>
     </div>

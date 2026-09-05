@@ -7,9 +7,10 @@ import {
   PlusCircle,
   ArrowRight,
   Clock,
-  Sparkles,
-  Zap,
-  Box
+  Box,
+  Compass,
+  ChevronRight,
+  Activity
 } from 'lucide-react';
 import { Project } from '../types';
 import { api } from '../services/api';
@@ -32,134 +33,150 @@ export const DashboardPage: React.FC = () => {
   }, []);
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-8 max-w-7xl mx-auto w-full">
-      {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-sm bg-navy-900 border border-navy-800 p-6 sm:p-8">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-navy-800 border border-navy-700 text-xs font-semibold text-navy-50">
-              <Sparkles className="w-3.5 h-3.5 text-forest-100" />
-              Smart India Hackathon Prototype
+    <div className="p-4 sm:p-6 lg:p-7 space-y-6 max-w-7xl mx-auto w-full">
+      {/* Compact Institutional Page Header */}
+      <div className="bg-white border border-slate-200 rounded p-4 sm:p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-800">
+              <Compass className="w-3.5 h-3.5" />
             </div>
-            <h1 className="text-3xl sm:text-4xl font-serif font-bold text-white tracking-tight">
-              UrbanParcel <span className="text-forest-100">AI</span>
-            </h1>
-            <p className="text-navy-100 text-sm sm:text-base max-w-2xl">
-              AI-Powered Automated Urban Parcel Mapping & Cadastral Feature Extraction System using High-Resolution Drone Imagery.
-            </p>
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider font-mono">
+              Municipal Land Administration Portal • Smart India Hackathon
+            </span>
           </div>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+            <span>UrbanParcel AI</span>
+            <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-mono font-normal border border-slate-200">
+              v2.4 Cadastral GIS Engine
+            </span>
+          </h1>
+          <p className="text-xs text-slate-600 max-w-3xl leading-relaxed">
+            Automated urban parcel mapping, boundary regularization, and cadastral feature extraction from high-resolution UAV drone orthomosaics.
+          </p>
+        </div>
 
-          <div className="shrink-0">
-            <button
-              onClick={() => navigate('/projects/new')}
-              className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-sm bg-forest-700 hover:bg-forest-600 text-white font-semibold text-sm border border-forest-700 cursor-pointer"
-            >
-              <PlusCircle className="w-5 h-5" />
-              <span>+ New Mapping Project</span>
-            </button>
-          </div>
+        <div className="shrink-0 flex items-center gap-2">
+          <button
+            onClick={() => navigate('/projects/new')}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded bg-teal-700 hover:bg-teal-600 text-white font-medium text-xs transition-colors shadow-xs cursor-pointer"
+          >
+            <PlusCircle className="w-4 h-4" />
+            <span>New Survey Project</span>
+          </button>
         </div>
       </div>
 
-      {/* KPI Stats Grid */}
+      {/* Cadastral Land System KPI Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title="Total Projects"
+          title="Cadastral Projects"
           value="12"
-          subtitle="Across AP & Telangana municipal zones"
+          subtitle="Municipal survey zones"
           icon={Layers}
-          color="cyan"
-          trend="+2 created this week"
+          color="indigo"
+          trend="+2 survey runs active"
         />
         <StatCard
-          title="Mapped Area"
+          title="Orthomosaic Area"
           value="24.8 km²"
-          subtitle="High-res orthomosaic coverage"
+          subtitle="UAV drone coverage"
           icon={MapPin}
-          color="emerald"
-          trend="3.2 cm/pixel avg GSD"
+          color="cyan"
+          trend="3.2 cm/px avg GSD"
         />
         <StatCard
-          title="Detected Parcels"
+          title="Delineated Parcels"
           value="4,821"
           subtitle="Cadastral boundaries extracted"
           icon={FileCheck2}
-          color="indigo"
+          color="emerald"
           trend="94.7% mean AI confidence"
         />
         <StatCard
           title="Extracted Features"
           value="8,643"
-          subtitle="Buildings & road segments"
+          subtitle="Building footprints & roads"
           icon={Box}
           color="amber"
-          trend="Automated vectorization"
+          trend="Vector regularized"
         />
       </div>
 
-      {/* Main Content Area */}
-      <div className="space-y-4">
+      {/* Cadastral Projects Workspace */}
+      <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-serif font-bold text-ink tracking-tight">Recent Projects</h2>
-            <p className="text-xs text-muted">Select a project to inspect its GIS layers and AI analysis.</p>
+            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+              <span>Active Survey Packages</span>
+              <span className="text-[10px] font-mono text-slate-500 font-normal bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                {projects.length} Records
+              </span>
+            </h2>
+            <p className="text-[11px] text-slate-500">Select a municipal project to launch the interactive GIS workspace and parcel review.</p>
           </div>
           <Link
             to="/projects"
-            className="text-xs font-semibold text-navy-700 hover:text-navy-900 flex items-center gap-1"
+            className="text-xs font-semibold text-teal-700 hover:text-teal-800 flex items-center gap-1 transition-colors"
           >
-            <span>View All Projects</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <span>View All Survey Packages</span>
+            <ChevronRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-48 rounded-sm bg-white border border-line" />
+              <div key={i} className="h-44 rounded bg-white border border-slate-200 animate-pulse" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {projects.slice(0, 3).map((project) => (
               <div
                 key={project.id}
                 onClick={() => navigate(`/projects/${project.id}/map`)}
-                className="group relative bg-white border border-line rounded-sm p-5 hover:border-navy-600 cursor-pointer flex flex-col justify-between"
+                className="group bg-white border border-slate-200 hover:border-teal-600 rounded p-4.5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] hover:shadow-sm cursor-pointer flex flex-col justify-between transition-all"
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-bold text-ink group-hover:text-navy-800 text-base">
-                      {project.name}
-                    </h3>
+                    <div>
+                      <h3 className="font-semibold text-slate-900 group-hover:text-teal-800 text-sm leading-tight transition-colors">
+                        {project.name}
+                      </h3>
+                      <p className="text-[11px] text-slate-500 flex items-center gap-1 mt-1">
+                        <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                        <span className="truncate">{project.location}</span>
+                      </p>
+                    </div>
                     <StatusBadge status={project.status} size="sm" />
                   </div>
 
-                  <div className="flex items-center gap-1.5 text-xs text-muted">
-                    <MapPin className="w-3.5 h-3.5 text-muted shrink-0" />
-                    <span className="truncate">{project.location}</span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-line text-xs">
+                  {/* Cadastral Specs Row */}
+                  <div className="grid grid-cols-3 gap-2 py-2.5 border-y border-slate-100 bg-slate-50/70 -mx-4.5 px-4.5 text-xs font-mono">
                     <div>
-                      <p className="text-muted text-[11px]">Area</p>
-                      <p className="font-semibold text-ink font-mono">{project.surveyAreaSqKm} km²</p>
+                      <p className="text-slate-400 text-[10px] font-sans">Survey Area</p>
+                      <p className="font-semibold text-slate-800">{project.surveyAreaSqKm} km²</p>
                     </div>
                     <div>
-                      <p className="text-muted text-[11px]">Parcels</p>
-                      <p className="font-semibold text-ink font-mono">{project.parcelCount}</p>
+                      <p className="text-slate-400 text-[10px] font-sans">Parcels</p>
+                      <p className="font-semibold text-slate-800">{project.parcelCount}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400 text-[10px] font-sans">GSD</p>
+                      <p className="font-semibold text-teal-800">{project.gsdCmPerPx} cm/px</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-line flex items-center justify-between text-xs text-muted">
-                  <span className="flex items-center gap-1 text-[11px]">
-                    <Clock className="w-3.5 h-3.5 text-muted" />
-                    <span>Updated {new Date(project.updatedAt).toLocaleDateString()}</span>
+                <div className="mt-3 flex items-center justify-between text-[11px] text-slate-500">
+                  <span className="flex items-center gap-1 font-mono text-[10px] text-slate-400">
+                    <Clock className="w-3 h-3" />
+                    <span>{new Date(project.updatedAt).toLocaleDateString()}</span>
                   </span>
-                  <span className="text-navy-700 font-semibold inline-flex items-center gap-1 text-xs">
+                  <span className="text-teal-700 group-hover:text-teal-800 font-semibold inline-flex items-center gap-1 text-xs">
                     <span>Open GIS Map</span>
-                    <ArrowRight className="w-3 h-3" />
+                    <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
                   </span>
                 </div>
               </div>
@@ -168,41 +185,43 @@ export const DashboardPage: React.FC = () => {
         )}
       </div>
 
-      {/* Demo Workflow Guide */}
-      <div className="bg-white border border-line rounded-sm p-5 space-y-4">
-        <div className="flex items-center justify-between">
+      {/* Cadastral Pipeline Operations Sequence Guide */}
+      <div className="bg-white border border-slate-200 rounded p-4.5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] space-y-3">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
           <div className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-navy-700" />
-            <h3 className="text-sm font-semibold text-ink uppercase tracking-wider">SIH Prototype Workflow Guide</h3>
+            <Activity className="w-4 h-4 text-teal-700" />
+            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+              Cadastral Feature Extraction Pipeline Workflow
+            </h3>
           </div>
-          <span className="text-xs text-muted">Step 1 of 8</span>
+          <span className="text-[10px] font-mono text-slate-500">8 Automated Operational Steps</span>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2 text-center text-xs">
           {[
-            { step: '1', title: 'Dashboard', active: true },
-            { step: '2', title: 'Create Project', active: false },
-            { step: '3', title: 'Upload Drone', active: false },
-            { step: '4', title: 'AI Pipeline', active: false },
-            { step: '5', title: 'GIS Map', active: false },
-            { step: '6', title: 'Parcel Details', active: false },
-            { step: '7', title: 'AI Analysis', active: false },
-            { step: '8', title: 'Export Data', active: false }
+            { step: '01', title: 'Survey Setup', active: true },
+            { step: '02', title: 'Create Project', active: false },
+            { step: '03', title: 'Upload UAV', active: false },
+            { step: '04', title: 'AI Pipeline', active: false },
+            { step: '05', title: 'GIS Spatial Map', active: false },
+            { step: '06', title: 'Cadastral Record', active: false },
+            { step: '07', title: 'Feature Analytics', active: false },
+            { step: '08', title: 'Official Export', active: false }
           ].map((item) => (
             <div
               key={item.step}
-              className={`p-2.5 rounded-sm border ${
+              className={`p-2 rounded border transition-colors ${
                 item.active
-                  ? 'bg-navy-50 border-navy-100 text-navy-950 font-semibold'
-                  : 'bg-canvas border-line text-muted'
+                  ? 'bg-teal-50/80 border-teal-200 text-teal-950 font-semibold'
+                  : 'bg-slate-50 border-slate-200 text-slate-500'
               }`}
             >
-              <div className={`w-5 h-5 rounded-full mx-auto mb-1 flex items-center justify-center font-mono text-[10px] ${
-                item.active ? 'bg-navy-900 text-white font-bold' : 'bg-white text-muted border border-line'
+              <div className={`w-4.5 h-4.5 rounded mx-auto mb-1 flex items-center justify-center font-mono text-[9px] ${
+                item.active ? 'bg-teal-700 text-white font-bold' : 'bg-white text-slate-500 border border-slate-200'
               }`}>
                 {item.step}
               </div>
-              <p className="truncate text-[11px]">{item.title}</p>
+              <p className="truncate text-[10px] leading-tight">{item.title}</p>
             </div>
           ))}
         </div>

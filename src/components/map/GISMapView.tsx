@@ -87,15 +87,15 @@ export const GISMapView: React.FC<GISMapViewProps> = ({
 
   // Dynamic style for Land Use types
   const getLandUseColor = (landUse: string, isSelected: boolean) => {
-    if (isSelected) return '#0c2340';
+    if (isSelected) return '#0f766e';
 
     switch (landUse) {
-      case 'Residential': return '#2c5aa0';
-      case 'Commercial': return '#1b6b4a';
-      case 'Mixed': return '#5b4d8a';
-      case 'Government': return '#b45309';
-      case 'Industrial': return '#9b2c2c';
-      default: return '#1c3d6b';
+      case 'Residential': return '#2563eb';
+      case 'Commercial': return '#0d9488';
+      case 'Mixed': return '#7c3aed';
+      case 'Government': return '#d97706';
+      case 'Industrial': return '#dc2626';
+      default: return '#334155';
     }
   };
 
@@ -125,7 +125,7 @@ export const GISMapView: React.FC<GISMapViewProps> = ({
           if (!positions || positions.length < 3) return null;
 
           const isSelected = selectedParcel?.id === parcel.id;
-          const strokeColor = isSelected ? '#0c2340' : getLandUseColor(parcel.landUse, false);
+          const strokeColor = isSelected ? '#0f766e' : getLandUseColor(parcel.landUse, false);
 
           return (
             <Polygon
@@ -133,9 +133,9 @@ export const GISMapView: React.FC<GISMapViewProps> = ({
               positions={positions}
               pathOptions={{
                 color: strokeColor,
-                weight: isSelected ? 4 : 2.5,
+                weight: isSelected ? 3.5 : 2,
                 fillColor: strokeColor,
-                fillOpacity: isSelected ? 0.45 : 0.25,
+                fillOpacity: isSelected ? 0.4 : 0.2,
                 dashArray: parcel.status === 'Flagged' ? '6, 6' : undefined
               }}
               eventHandlers={{
@@ -146,10 +146,10 @@ export const GISMapView: React.FC<GISMapViewProps> = ({
                 <div className="p-1 font-sans space-y-0.5">
                   <div className="flex items-center gap-1 font-bold text-slate-900">
                     <span>{parcel.id}</span>
-                    <span className="text-[10px] text-navy-700 font-mono">({parcel.surveyNo})</span>
+                    <span className="text-[10px] text-teal-800 font-mono">({parcel.surveyNo})</span>
                   </div>
                   <p className="text-[11px] text-slate-700">Area: <strong>{parcel.areaSqM} m²</strong> | Land Use: {parcel.landUse}</p>
-                  <p className="text-[10px] text-forest-700 font-medium">AI Confidence: {parcel.confidence}%</p>
+                  <p className="text-[10px] text-emerald-700 font-medium">AI Confidence: {parcel.confidence}%</p>
                 </div>
               </Tooltip>
             </Polygon>

@@ -26,15 +26,15 @@ export const Toast: React.FC<ToastProps> = ({ toast, onClose }) => {
   if (!toast) return null;
 
   const bgMap = {
-    success: 'bg-white border-forest-100 text-forest-800 shadow-md',
-    error: 'bg-white border-rose-200 text-rose-900 shadow-md',
-    info: 'bg-white border-line text-ink shadow-md'
+    success: 'bg-white border-emerald-200 text-slate-900 shadow-lg',
+    error: 'bg-white border-rose-200 text-slate-900 shadow-lg',
+    info: 'bg-white border-slate-200 text-slate-900 shadow-lg'
   };
 
   const iconColorMap = {
-    success: 'text-forest-700',
-    error: 'text-rose-700',
-    info: 'text-navy-700'
+    success: 'text-emerald-600',
+    error: 'text-rose-600',
+    info: 'text-teal-700'
   };
 
   const IconMap = {
@@ -47,17 +47,17 @@ export const Toast: React.FC<ToastProps> = ({ toast, onClose }) => {
 
   return (
     <div className="fixed bottom-5 right-5 z-50 max-w-sm">
-      <div className={`flex items-start gap-3 p-4 rounded-sm border ${bgMap[toast.type]}`}>
-        <Icon className={`w-5 h-5 shrink-0 mt-0.5 ${iconColorMap[toast.type]}`} />
-        <div className="flex-1 text-sm">
-          <p className="font-semibold text-ink">{toast.title}</p>
-          {toast.description && <p className="text-xs text-muted mt-0.5">{toast.description}</p>}
+      <div className={`flex items-start gap-3 p-3.5 rounded border ${bgMap[toast.type]}`}>
+        <Icon className={`w-4 h-4 shrink-0 mt-0.5 ${iconColorMap[toast.type]}`} />
+        <div className="flex-1 text-xs">
+          <p className="font-semibold text-slate-900">{toast.title}</p>
+          {toast.description && <p className="text-[11px] text-slate-500 mt-0.5">{toast.description}</p>}
         </div>
         <button
           onClick={onClose}
-          className="text-muted hover:text-ink p-1 rounded-sm"
+          className="text-slate-400 hover:text-slate-700 p-0.5 rounded"
         >
-          <X className="w-4 h-4" />
+          <X className="w-3.5 h-3.5" />
         </button>
       </div>
     </div>

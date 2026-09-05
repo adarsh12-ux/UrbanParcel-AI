@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import { ProtectedRoute } from './components/common/ProtectedRoute';
+import { LoginPage } from './pages/LoginPage';
 import { MainLayout } from './components/layout/MainLayout';
 import { DashboardPage } from './pages/DashboardPage';
 import { ProjectsPage } from './pages/ProjectsPage';
@@ -12,11 +15,11 @@ import { AnalysisPage } from './pages/AnalysisPage';
 import { ExportPage } from './pages/ExportPage';
 import { Project } from './types';
 
-export const App: React.FC = () => {
+const AuthenticatedWorkspace: React.FC = () => {
   const [activeProject, setActiveProject] = useState<Project | null>(null);
 
   return (
-    <BrowserRouter>
+    <ProtectedRoute>
       <MainLayout activeProject={activeProject} onProjectChange={setActiveProject}>
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -32,8 +35,22 @@ export const App: React.FC = () => {
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </MainLayout>
-    </BrowserRouter>
+    </ProtectedRoute>
+  );
+};
+
+export const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/*" element={<AuthenticatedWorkspace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 };
 
 export default App;
+

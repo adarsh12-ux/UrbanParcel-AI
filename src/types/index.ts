@@ -1,3 +1,5 @@
+export * from './auth';
+
 export type ProjectStatus = 'Draft' | 'Processing' | 'Completed' | 'Failed';
 
 export interface Project {

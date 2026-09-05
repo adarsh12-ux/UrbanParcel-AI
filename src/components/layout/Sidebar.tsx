@@ -1,18 +1,18 @@
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   Layers,
   BarChart3,
   Download,
-  Settings,
-  User,
   PlusCircle,
-  MapPin,
   X,
   Map,
-  Compass
+  Compass,
+  LogOut,
+  ShieldCheck
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -22,6 +22,13 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, activeProjectId = 'proj-001' }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   const navItems = [
     {
@@ -147,24 +154,35 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, activeProject
           <p className="text-[10px] leading-tight text-slate-400">Drone AI Cadastral Mapping System</p>
         </div>
 
-        {/* User & Settings Footer */}
-        <div className="p-2.5 border-t border-slate-800 bg-slate-950/70 space-y-1">
-          <div className="flex items-center justify-between px-2 py-1 text-[11px] text-slate-400">
+        {/* Authenticated Government Employee Footer */}
+        <div className="p-2.5 border-t border-slate-800 bg-slate-950/70 space-y-1.5">
+          <div className="flex items-center justify-between px-2 py-0.5 text-[11px] text-slate-400">
             <span className="flex items-center gap-1.5 font-medium">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-              <span>CRS Status</span>
+              <span className="text-[10px]">AUTH SESSION ACTIVE</span>
             </span>
-            <span className="font-mono text-[10px] text-slate-300">EPSG:4326</span>
+            <span className="font-mono text-[9px] text-teal-400">{user?.id || 'AP-REV-2024'}</span>
           </div>
 
-          <div className="flex items-center gap-2.5 px-2 py-1.5 rounded bg-slate-900 border border-slate-800">
-            <div className="w-6 h-6 rounded bg-slate-800 border border-slate-700 flex items-center justify-center text-teal-400 font-semibold text-[10px]">
-              AS
+          <div className="flex items-center justify-between gap-2 px-2 py-1.5 rounded bg-slate-900 border border-slate-800">
+            <div className="flex items-center gap-2 overflow-hidden">
+              <div className="w-6 h-6 rounded bg-teal-900 border border-teal-700 flex items-center justify-center text-teal-200 font-semibold text-[10px] shrink-0">
+                {user?.avatarInitials || 'AS'}
+              </div>
+              <div className="overflow-hidden">
+                <p className="text-[11px] font-medium text-slate-200 truncate">{user?.name || 'Adarsh Sharma'}</p>
+                <p className="text-[9px] text-slate-400 truncate">{user?.designation || 'Senior Cadastral Surveyor'}</p>
+              </div>
             </div>
-            <div className="flex-1 overflow-hidden">
-              <p className="text-[11px] font-medium text-slate-200 truncate">Adarsh Sharma</p>
-              <p className="text-[9px] text-slate-400 truncate">GIS Survey Specialist</p>
-            </div>
+
+            <button
+              onClick={handleLogout}
+              title="Sign Out / End Session"
+              className="p-1 rounded text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
+              aria-label="Sign Out"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
       </aside>

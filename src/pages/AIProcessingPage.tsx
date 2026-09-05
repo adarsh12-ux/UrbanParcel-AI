@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Cpu, CheckCircle2, Loader2, MapPin, Layers, ArrowRight, Terminal, Sparkles, Check } from 'lucide-react';
+import { Cpu, Loader2, ArrowRight, Terminal, Sparkles, Check } from 'lucide-react';
 import { Project, PipelineStep } from '../types';
 import { api } from '../services/api';
 
@@ -105,69 +105,69 @@ export const AIProcessingPage: React.FC = () => {
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full space-y-6">
       {/* Disclaimer Banner */}
-      <div className="flex items-center justify-between px-4 py-2 rounded-xl bg-cyan-950/80 border border-cyan-800/60 text-xs text-cyan-300 font-medium shadow-md">
+      <div className="flex items-center justify-between px-4 py-2.5 rounded-sm bg-navy-50 border border-navy-100 text-xs text-navy-900 font-medium">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-cyan-400 shrink-0" />
+          <Sparkles className="w-4 h-4 text-navy-700 shrink-0" />
           <span>Prototype processing — sample output demonstration for Smart India Hackathon</span>
         </div>
-        <span className="bg-cyan-900/80 text-cyan-200 px-2 py-0.5 rounded font-mono text-[10px] hidden sm:inline">
+        <span className="bg-white text-navy-800 px-2 py-0.5 rounded-sm font-mono text-[10px] border border-navy-100 font-semibold hidden sm:inline">
           PyTorch Model Simulation
         </span>
       </div>
 
       {/* Header */}
-      <div className="border-b border-slate-800 pb-4 space-y-1">
-        <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-2">
-          <Cpu className="w-6 h-6 text-cyan-400 animate-pulse" />
+      <div className="border-b border-line pb-4 space-y-1">
+        <h1 className="text-2xl font-serif font-bold text-ink flex items-center gap-2">
+          <Cpu className="w-6 h-6 text-navy-700" />
           <span>AI-Powered Feature Extraction Pipeline</span>
         </h1>
-        <p className="text-xs text-slate-400">Step 3 of 4: Deep Learning Segmentation & Automated GIS Vector Layer Generation.</p>
+        <p className="text-xs text-muted">Step 3 of 4: Deep Learning Segmentation & Automated GIS Vector Layer Generation.</p>
       </div>
 
       {/* Progress Bar & Status Bar */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-xl">
+      <div className="bg-white border border-line rounded-sm p-6 space-y-4">
         <div className="flex items-center justify-between text-sm">
           <div className="flex items-center gap-3">
-            <span className="font-bold text-slate-100 text-lg">Processing Pipeline</span>
-            <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+            <span className="font-bold text-ink text-lg">Processing Pipeline</span>
+            <span className={`px-2.5 py-0.5 rounded-sm text-xs font-semibold ${
               isCompleted
-                ? 'bg-emerald-950 text-emerald-400 border border-emerald-800'
-                : 'bg-cyan-950 text-cyan-400 border border-cyan-800 animate-pulse'
+                ? 'bg-forest-50 text-forest-800 border border-forest-100'
+                : 'bg-navy-50 text-navy-800 border border-navy-100'
             }`}>
               {isCompleted ? 'Completed' : 'Processing...'}
             </span>
           </div>
 
-          <div className="text-right font-mono font-bold text-cyan-400 text-xl">
+          <div className="text-right font-mono font-bold text-navy-900 text-xl">
             {progress}%
           </div>
         </div>
 
         {/* Progress Bar */}
-        <div className="w-full bg-slate-950 h-3 rounded-full overflow-hidden border border-slate-800 p-0.5">
+        <div className="w-full bg-canvas h-3 rounded-sm overflow-hidden border border-line p-0.5">
           <div
-            className="h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-emerald-400 rounded-full transition-all duration-500 shadow-md shadow-cyan-500/50"
+            className="h-full bg-navy-900 rounded-sm"
             style={{ width: `${progress}%` }}
           />
         </div>
 
         {/* Pipeline Details Row */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 text-xs font-mono border-t border-slate-800/80">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 text-xs font-mono border-t border-line">
           <div>
-            <p className="text-slate-400 font-sans text-[10px]">Processing Time</p>
-            <p className="font-semibold text-slate-200">{isCompleted ? '12.4s' : 'Running...'}</p>
+            <p className="text-muted font-sans text-[10px]">Processing Time</p>
+            <p className="font-semibold text-ink">{isCompleted ? '12.4s' : 'Running...'}</p>
           </div>
           <div>
-            <p className="text-slate-400 font-sans text-[10px]">Image Dimensions</p>
-            <p className="font-semibold text-slate-200">5472 × 3648 px</p>
+            <p className="text-muted font-sans text-[10px]">Image Dimensions</p>
+            <p className="font-semibold text-ink">5472 × 3648 px</p>
           </div>
           <div>
-            <p className="text-slate-400 font-sans text-[10px]">Survey Area</p>
-            <p className="font-semibold text-slate-200">{project?.surveyAreaSqKm || 4.2} km²</p>
+            <p className="text-muted font-sans text-[10px]">Survey Area</p>
+            <p className="font-semibold text-ink">{project?.surveyAreaSqKm || 4.2} km²</p>
           </div>
           <div>
-            <p className="text-slate-400 font-sans text-[10px]">Model Status</p>
-            <p className="font-semibold text-emerald-400">ResNet-50 + U-Net</p>
+            <p className="text-muted font-sans text-[10px]">Model Status</p>
+            <p className="font-semibold text-forest-800">ResNet-50 + U-Net</p>
           </div>
         </div>
       </div>
@@ -181,36 +181,36 @@ export const AIProcessingPage: React.FC = () => {
           return (
             <div
               key={step.id}
-              className={`p-4 rounded-xl border transition-all flex items-start gap-3 ${
+              className={`p-4 rounded-sm border flex items-start gap-3 ${
                 isDone
-                  ? 'bg-slate-900/90 border-emerald-800/50 text-slate-200'
+                  ? 'bg-forest-50 border-forest-100 text-ink'
                   : isProc
-                  ? 'bg-cyan-950/40 border-cyan-500/60 text-slate-100 shadow-md shadow-cyan-950/40'
-                  : 'bg-slate-950/50 border-slate-800 text-slate-400'
+                  ? 'bg-navy-50 border-navy-100 text-navy-950 font-semibold'
+                  : 'bg-white border-line text-muted'
               }`}
             >
-              <div className={`w-7 h-7 rounded-lg shrink-0 flex items-center justify-center font-bold text-xs ${
+              <div className={`w-7 h-7 rounded-sm shrink-0 flex items-center justify-center font-bold text-xs ${
                 isDone
-                  ? 'bg-emerald-950 text-emerald-400 border border-emerald-800'
+                  ? 'bg-forest-700 text-white border border-forest-700'
                   : isProc
-                  ? 'bg-cyan-950 text-cyan-400 border border-cyan-500 animate-spin-slow'
-                  : 'bg-slate-900 text-slate-500 border border-slate-800'
+                  ? 'bg-navy-900 text-white border border-navy-900'
+                  : 'bg-canvas text-muted border border-line'
               }`}>
-                {isDone ? <Check className="w-4 h-4 text-emerald-400" /> : isProc ? <Loader2 className="w-4 h-4 animate-spin text-cyan-400" /> : step.id}
+                {isDone ? <Check className="w-4 h-4 text-white" /> : isProc ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : step.id}
               </div>
 
               <div className="flex-1">
                 <div className="flex items-center justify-between">
-                  <h3 className={`text-xs font-semibold ${isDone ? 'text-slate-200' : isProc ? 'text-cyan-300' : 'text-slate-400'}`}>
+                  <h3 className={`text-xs font-semibold ${isDone ? 'text-ink' : isProc ? 'text-navy-950' : 'text-muted'}`}>
                     {step.name}
                   </h3>
                   <span className={`text-[10px] uppercase tracking-wider font-semibold ${
-                    isDone ? 'text-emerald-400' : isProc ? 'text-cyan-400' : 'text-slate-400'
+                    isDone ? 'text-forest-800' : isProc ? 'text-navy-800' : 'text-muted'
                   }`}>
                     {step.status}
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-400 mt-0.5">{step.description}</p>
+                <p className="text-[11px] text-muted mt-0.5">{step.description}</p>
               </div>
             </div>
           );
@@ -218,18 +218,18 @@ export const AIProcessingPage: React.FC = () => {
       </div>
 
       {/* Terminal Log Output Stream */}
-      <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2 font-mono text-xs shadow-inner">
-        <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
-          <span className="flex items-center gap-1.5 text-slate-400 text-[11px] uppercase font-semibold tracking-wider">
-            <Terminal className="w-3.5 h-3.5 text-cyan-400" />
+      <div className="bg-navy-950 border border-navy-800 rounded-sm p-4 space-y-2 font-mono text-xs">
+        <div className="flex items-center justify-between border-b border-navy-800 pb-2">
+          <span className="flex items-center gap-1.5 text-navy-100 text-[11px] uppercase font-semibold tracking-wider">
+            <Terminal className="w-3.5 h-3.5 text-forest-100" />
             <span>AI Execution Stream Log</span>
           </span>
-          <span className="text-[10px] text-slate-400">Live stdout</span>
+          <span className="text-[10px] text-navy-100">Live stdout</span>
         </div>
-        <div className="max-h-36 overflow-y-auto space-y-1 text-slate-300 text-[11px] leading-relaxed">
+        <div className="max-h-36 overflow-y-auto space-y-1 text-navy-50 text-[11px] leading-relaxed">
           {logs.map((log, i) => (
             <div key={i} className="flex items-start gap-2">
-              <span className="text-cyan-400 font-bold">&gt;</span>
+              <span className="text-forest-100 font-bold">&gt;</span>
               <span>{log}</span>
             </div>
           ))}
@@ -237,14 +237,14 @@ export const AIProcessingPage: React.FC = () => {
       </div>
 
       {/* Completion Action */}
-      <div className="flex justify-end pt-4 border-t border-slate-800">
+      <div className="flex justify-end pt-4 border-t border-line">
         <button
           onClick={() => navigate(`/projects/${id || 'proj-001'}/map`)}
           disabled={!isCompleted}
-          className={`inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-xl font-bold text-sm shadow-xl transition-all transform ${
+          className={`inline-flex items-center justify-center gap-2.5 px-8 py-3 rounded-sm font-bold text-sm ${
             isCompleted
-              ? 'bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 shadow-emerald-950/60 hover:-translate-y-0.5 cursor-pointer'
-              : 'bg-slate-800 text-slate-400 cursor-not-allowed border border-slate-700'
+              ? 'bg-forest-700 hover:bg-forest-600 text-white cursor-pointer'
+              : 'bg-canvas text-muted cursor-not-allowed border border-line'
           }`}
         >
           <span>View Interactive Map →</span>

@@ -21,27 +21,28 @@ export const StatCard: React.FC<StatCardProps> = ({
   color = 'cyan'
 }) => {
   const colorMap = {
-    cyan: 'bg-cyan-950/40 border-cyan-800/40 text-cyan-400 group-hover:border-cyan-500/60',
-    emerald: 'bg-emerald-950/40 border-emerald-800/40 text-emerald-400 group-hover:border-emerald-500/60',
-    indigo: 'bg-indigo-950/40 border-indigo-800/40 text-indigo-400 group-hover:border-indigo-500/60',
-    amber: 'bg-amber-950/40 border-amber-800/40 text-amber-400 group-hover:border-amber-500/60'
+    cyan: 'bg-navy-50 border-navy-100 text-navy-800',
+    emerald: 'bg-forest-50 border-forest-100 text-forest-800',
+    indigo: 'bg-navy-50 border-navy-100 text-navy-700',
+    amber: 'bg-amber-50 border-amber-200 text-amber-800'
   };
 
   return (
-    <div className={`group relative overflow-hidden bg-slate-900/90 border border-slate-800/80 rounded-xl p-5 transition-all duration-200 hover:shadow-lg hover:shadow-slate-950/50`}>
-      <div className="flex items-center justify-between">
+    <div className="relative bg-white border border-line rounded-sm p-5 shadow-[0_1px_2px_rgba(12,35,64,0.04)]">
+      <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-navy-900" />
+      <div className="flex items-center justify-between pl-1">
         <div>
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">{title}</p>
-          <h3 className="text-2xl font-bold text-slate-100 mt-1 font-mono tracking-tight">{value}</h3>
-          {subtitle && <p className="text-xs text-slate-400 mt-1">{subtitle}</p>}
+          <p className="text-xs font-semibold text-muted uppercase tracking-wider">{title}</p>
+          <h3 className="text-2xl font-bold text-ink mt-1 font-mono tracking-tight">{value}</h3>
+          {subtitle && <p className="text-xs text-muted mt-1">{subtitle}</p>}
           {trend && (
-            <p className={`text-xs mt-2 font-medium ${trendPositive ? 'text-emerald-400' : 'text-amber-400'}`}>
+            <p className={`text-xs mt-2 font-medium ${trendPositive ? 'text-forest-700' : 'text-amber-700'}`}>
               {trend}
             </p>
           )}
         </div>
-        <div className={`p-3 rounded-lg border ${colorMap[color]} transition-colors duration-200`}>
-          <Icon className="w-6 h-6" />
+        <div className={`p-3 rounded-sm border ${colorMap[color]}`}>
+          <Icon className="w-5 h-5" />
         </div>
       </div>
     </div>

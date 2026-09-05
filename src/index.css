@@ -1,60 +1,131 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: "Public Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-serif: "Source Serif 4", "Georgia", "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", "Consolas", "Courier New", monospace;
+
+  --color-navy-950: #071422;
+  --color-navy-900: #0c2340;
+  --color-navy-800: #143056;
+  --color-navy-700: #1c3d6b;
+  --color-navy-600: #2a5288;
+  --color-navy-100: #d7e2ef;
+  --color-navy-50: #eef3f8;
+
+  --color-forest-800: #14532d;
+  --color-forest-700: #166534;
+  --color-forest-600: #15803d;
+  --color-forest-100: #dcfce7;
+  --color-forest-50: #f0f7f3;
+
+  --color-canvas: #eef1f4;
+  --color-ink: #1a2332;
+  --color-muted: #5b6775;
+  --color-line: #d0d7de;
+}
+
 @layer base {
+  html {
+    color-scheme: light;
+  }
+
   body {
-    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-family: var(--font-sans);
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, .font-serif {
+    font-family: var(--font-serif);
   }
 
   code, pre, .font-mono {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
+  }
+
+  button, input, select, textarea {
+    font-family: inherit;
   }
 }
 
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #090d16;
+  background: #e8edf2;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
-  border-radius: 3px;
+  background: #9aa8b5;
+  border-radius: 2px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #7b8a99;
 }
 
-/* Custom Leaflet Tooltip Styling */
+/* Leaflet — municipal map chrome */
 .leaflet-container {
-  background: #090d16 !important;
-  font-family: 'Inter', sans-serif !important;
+  background: #dce3ea !important;
+  font-family: var(--font-sans) !important;
+  font-size: 12px !important;
+}
+
+.leaflet-control-zoom a,
+.leaflet-control-attribution {
+  border-radius: 2px !important;
+}
+
+.leaflet-control-zoom {
+  border: 1px solid #c5ced6 !important;
+  box-shadow: 0 1px 3px rgba(12, 35, 64, 0.12) !important;
+  border-radius: 2px !important;
+  overflow: hidden;
+}
+
+.leaflet-control-zoom a {
+  color: #0c2340 !important;
+  background: #ffffff !important;
+  border-bottom: 1px solid #d0d7de !important;
+  width: 30px !important;
+  height: 30px !important;
+  line-height: 30px !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: #eef3f8 !important;
+  color: #0c2340 !important;
+}
+
+.leaflet-control-attribution {
+  background: rgba(255, 255, 255, 0.92) !important;
+  color: #5b6775 !important;
+  border-top: 1px solid #d0d7de !important;
 }
 
 .leaflet-tooltip.custom-leaflet-tooltip {
-  background-color: #0f172a !important;
-  border: 1px solid #334155 !important;
-  color: #f8fafc !important;
-  border-radius: 8px !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
-  padding: 8px 12px !important;
+  background-color: #ffffff !important;
+  border: 1px solid #c5ced6 !important;
+  color: #1a2332 !important;
+  border-radius: 2px !important;
+  box-shadow: 0 4px 12px rgba(12, 35, 64, 0.12) !important;
+  padding: 8px 10px !important;
 }
 
 .leaflet-tooltip-top:before {
-  border-top-color: #334155 !important;
+  border-top-color: #c5ced6 !important;
 }
 
 @keyframes spin-slow {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .animate-spin-slow {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { Layers, Search, MapPin, Download, BarChart3, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react';
+import { Search, MapPin, Download, BarChart3, SlidersHorizontal } from 'lucide-react';
 import { Project, Parcel, Building, Road } from '../types';
 import { api } from '../services/api';
 import { GISMapView } from '../components/map/GISMapView';
@@ -81,24 +81,24 @@ export const GISMapPage: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col relative h-[calc(100vh-64px)] overflow-hidden bg-slate-950">
+    <div className="flex-1 flex flex-col relative h-[calc(100vh-64px)] overflow-hidden bg-canvas">
       {/* Map Header Toolbar */}
-      <div className="h-12 bg-slate-950/90 border-b border-slate-800/80 px-4 flex items-center justify-between z-20 backdrop-blur-md">
+      <div className="h-12 bg-white border-b border-line px-4 flex items-center justify-between z-20">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 text-xs font-semibold text-slate-200">
-            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-            <span>Interactive GIS Workspace</span>
-            <span className="text-slate-500 font-mono">[{project?.name || 'Urban Zone A'}]</span>
+          <div className="flex items-center gap-2 text-xs font-semibold text-ink">
+            <span className="w-2.5 h-2.5 rounded-full bg-forest-700"></span>
+            <span className="font-bold">Interactive GIS Workspace</span>
+            <span className="text-muted font-mono">[{project?.name || 'Urban Zone A'}]</span>
           </div>
 
           <form onSubmit={handleSearchParcel} className="relative hidden sm:block">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-3.5 h-3.5 text-muted absolute left-2.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search Parcel ID (e.g. UP-1001)..."
-              className="bg-slate-900 border border-slate-800 rounded-lg pl-8 pr-3 py-1 text-xs text-slate-200 placeholder-slate-400 font-mono focus:outline-none focus:border-cyan-500"
+              className="bg-white border border-line rounded-sm pl-8 pr-3 py-1 text-xs text-ink placeholder:text-muted font-mono focus:outline-none focus:border-navy-600 focus:ring-1 focus:ring-navy-600"
             />
           </form>
         </div>
@@ -106,13 +106,13 @@ export const GISMapPage: React.FC = () => {
         <div className="flex items-center gap-1.5 sm:gap-2 text-xs">
           <button
             onClick={() => setLayerControlOpen(!layerControlOpen)}
-            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg border text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-sm border text-xs font-medium cursor-pointer ${
               layerControlOpen
-                ? 'bg-cyan-950/80 border-cyan-800 text-cyan-300'
-                : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'
+                ? 'bg-navy-50 border-navy-100 text-navy-900 font-semibold'
+                : 'bg-white border-line text-ink hover:bg-navy-50'
             }`}
           >
-            <SlidersHorizontal className="w-3.5 h-3.5 text-cyan-400" />
+            <SlidersHorizontal className="w-3.5 h-3.5 text-navy-700" />
             <span className="hidden sm:inline">Layers Control</span>
             <span className="sm:hidden">Layers</span>
           </button>
@@ -120,13 +120,13 @@ export const GISMapPage: React.FC = () => {
           {selectedParcel && (
             <button
               onClick={() => setPanelOpen(!panelOpen)}
-              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg border text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-sm border text-xs font-medium cursor-pointer ${
                 panelOpen
-                  ? 'bg-cyan-950/80 border-cyan-800 text-cyan-300'
-                  : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'
+                  ? 'bg-amber-50 border-amber-200 text-amber-900 font-semibold'
+                  : 'bg-white border-line text-ink hover:bg-navy-50'
               }`}
             >
-              <MapPin className="w-3.5 h-3.5 text-amber-400" />
+              <MapPin className="w-3.5 h-3.5 text-amber-700" />
               <span className="hidden sm:inline">Parcel Info</span>
               <span className="sm:hidden">Info</span>
             </button>
@@ -134,15 +134,15 @@ export const GISMapPage: React.FC = () => {
 
           <button
             onClick={() => navigate(`/projects/${projectId}/analysis`)}
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 hover:border-slate-700 text-cyan-300 font-medium transition-colors"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-sm bg-white border border-line hover:bg-navy-50 text-ink font-medium cursor-pointer"
           >
-            <BarChart3 className="w-3.5 h-3.5 text-cyan-400" />
+            <BarChart3 className="w-3.5 h-3.5 text-navy-700" />
             <span className="hidden sm:inline">AI Analysis</span>
           </button>
 
           <button
             onClick={() => navigate(`/projects/${projectId}/export`)}
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-medium transition-colors shadow-xs"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-sm bg-forest-700 hover:bg-forest-600 text-white font-semibold cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Export GIS</span>
@@ -170,7 +170,7 @@ export const GISMapPage: React.FC = () => {
 
         {/* Floating Layer Control Panel Left */}
         {layerControlOpen && (
-          <div className="absolute top-2 left-2 sm:top-4 sm:left-4 z-10 animate-fade-in max-w-[calc(100vw-1rem)]">
+          <div className="absolute top-2 left-2 sm:top-4 sm:left-4 z-10 max-w-[calc(100vw-1rem)]">
             <LayerControl
               layers={layersState}
               onToggleLayer={handleToggleLayer}
@@ -183,7 +183,7 @@ export const GISMapPage: React.FC = () => {
 
         {/* Selected Parcel Details Panel Right */}
         {panelOpen && selectedParcel && (
-          <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10 animate-fade-in max-w-[calc(100vw-1rem)]">
+          <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10 max-w-[calc(100vw-1rem)]">
             <ParcelInfoPanel
               parcel={selectedParcel}
               onClose={() => setPanelOpen(false)}
@@ -194,30 +194,30 @@ export const GISMapPage: React.FC = () => {
       </div>
 
       {/* Bottom GIS Statistics Bar */}
-      <div className="h-10 bg-slate-950/95 border-t border-slate-800/80 px-4 flex items-center justify-between z-20 backdrop-blur-md text-xs font-mono text-slate-300">
+      <div className="h-10 bg-white border-t border-line px-4 flex items-center justify-between z-20 text-xs font-mono text-ink">
         <div className="flex items-center gap-4 sm:gap-6 overflow-x-auto">
           <div className="flex items-center gap-1.5 shrink-0">
-            <span className="text-slate-500">Parcels:</span>
-            <span className="font-bold text-cyan-400">247</span>
+            <span className="text-muted font-sans">Parcels:</span>
+            <span className="font-bold text-navy-900">247</span>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
-            <span className="text-slate-500">Buildings:</span>
-            <span className="font-bold text-amber-400">381</span>
+            <span className="text-muted font-sans">Buildings:</span>
+            <span className="font-bold text-amber-800">381</span>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
-            <span className="text-slate-500">Road Segments:</span>
-            <span className="font-bold text-emerald-400">42</span>
+            <span className="text-muted font-sans">Road Segments:</span>
+            <span className="font-bold text-forest-800">42</span>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
-            <span className="text-slate-500">Mapped Area:</span>
-            <span className="font-bold text-slate-200">4.2 km²</span>
+            <span className="text-muted font-sans">Mapped Area:</span>
+            <span className="font-bold text-ink">4.2 km²</span>
           </div>
         </div>
 
-        <div className="hidden md:flex items-center gap-4 text-[11px] text-slate-400">
+        <div className="hidden md:flex items-center gap-4 text-[11px] text-muted">
           <span>Scale: 1:1,000</span>
           <span>CRS: EPSG:4326</span>
-          <span className="text-emerald-400 font-semibold">AI Confidence: 94.7%</span>
+          <span className="text-forest-800 font-semibold">AI Confidence: 94.7%</span>
         </div>
       </div>
     </div>

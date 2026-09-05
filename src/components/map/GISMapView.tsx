@@ -87,15 +87,15 @@ export const GISMapView: React.FC<GISMapViewProps> = ({
 
   // Dynamic style for Land Use types
   const getLandUseColor = (landUse: string, isSelected: boolean) => {
-    if (isSelected) return '#06b6d4'; // Cyan 500 for selected
+    if (isSelected) return '#0c2340';
 
     switch (landUse) {
-      case 'Residential': return '#3b82f6'; // Blue
-      case 'Commercial': return '#10b981'; // Emerald
-      case 'Mixed': return '#8b5cf6'; // Purple
-      case 'Government': return '#f59e0b'; // Amber
-      case 'Industrial': return '#ef4444'; // Red
-      default: return '#0284c7'; // Cyan
+      case 'Residential': return '#2c5aa0';
+      case 'Commercial': return '#1b6b4a';
+      case 'Mixed': return '#5b4d8a';
+      case 'Government': return '#b45309';
+      case 'Industrial': return '#9b2c2c';
+      default: return '#1c3d6b';
     }
   };
 
@@ -107,7 +107,7 @@ export const GISMapView: React.FC<GISMapViewProps> = ({
         center={safeCenter}
         zoom={16}
         scrollWheelZoom={true}
-        className="w-full h-full min-h-[400px] rounded-2xl overflow-hidden z-0"
+        className="w-full h-full min-h-[400px] overflow-hidden z-0"
         zoomControl={true}
       >
         <TileLayer
@@ -125,7 +125,7 @@ export const GISMapView: React.FC<GISMapViewProps> = ({
           if (!positions || positions.length < 3) return null;
 
           const isSelected = selectedParcel?.id === parcel.id;
-          const strokeColor = isSelected ? '#22d3ee' : getLandUseColor(parcel.landUse, false);
+          const strokeColor = isSelected ? '#0c2340' : getLandUseColor(parcel.landUse, false);
 
           return (
             <Polygon
@@ -146,10 +146,10 @@ export const GISMapView: React.FC<GISMapViewProps> = ({
                 <div className="p-1 font-sans space-y-0.5">
                   <div className="flex items-center gap-1 font-bold text-slate-900">
                     <span>{parcel.id}</span>
-                    <span className="text-[10px] text-cyan-600 font-mono">({parcel.surveyNo})</span>
+                    <span className="text-[10px] text-navy-700 font-mono">({parcel.surveyNo})</span>
                   </div>
                   <p className="text-[11px] text-slate-700">Area: <strong>{parcel.areaSqM} m²</strong> | Land Use: {parcel.landUse}</p>
-                  <p className="text-[10px] text-emerald-700 font-medium">AI Confidence: {parcel.confidence}%</p>
+                  <p className="text-[10px] text-forest-700 font-medium">AI Confidence: {parcel.confidence}%</p>
                 </div>
               </Tooltip>
             </Polygon>
@@ -192,7 +192,7 @@ export const GISMapView: React.FC<GISMapViewProps> = ({
               key={road.id}
               positions={positions}
               pathOptions={{
-                color: '#10b981',
+                color: '#166534',
                 weight: 5,
                 opacity: 0.85
               }}

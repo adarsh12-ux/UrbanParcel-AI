@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Download, FileJson, FileSpreadsheet, FileCode, Archive, Image, FileText, CheckCircle2, Layers } from 'lucide-react';
+import { Download, FileJson, FileSpreadsheet, FileCode, Archive, Image, FileText } from 'lucide-react';
 import { Project, Parcel } from '../types';
 import { api } from '../services/api';
 import { Toast, ToastMessage } from '../components/common/Toast';
@@ -124,18 +124,18 @@ export const ExportPage: React.FC = () => {
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full space-y-6">
       {/* Header */}
-      <div className="border-b border-slate-800 pb-4 space-y-1">
-        <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-2">
-          <Download className="w-6 h-6 text-cyan-400" />
+      <div className="border-b border-line pb-4 space-y-1">
+        <h1 className="text-2xl font-serif font-bold text-ink flex items-center gap-2">
+          <Download className="w-6 h-6 text-navy-700" />
           <span>Export Cadastral GIS Data & Reports</span>
         </h1>
-        <p className="text-xs text-slate-400">Step 4 of 4: Download GIS vector layers, attribute tables, and PDF survey reports.</p>
+        <p className="text-xs text-muted">Step 4 of 4: Download GIS vector layers, attribute tables, and PDF survey reports.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Layer Checkboxes */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
-          <h2 className="text-sm font-semibold text-slate-200 uppercase tracking-wider border-b border-slate-800 pb-2">
+        <div className="bg-white border border-line rounded-sm p-5 space-y-4">
+          <h2 className="text-sm font-semibold text-ink uppercase tracking-wider border-b border-line pb-2">
             1. Select Vector Layers
           </h2>
 
@@ -150,17 +150,17 @@ export const ExportPage: React.FC = () => {
               return (
                 <label
                   key={item.key}
-                  className="flex items-start gap-3 p-2.5 rounded-xl bg-slate-950 border border-slate-800/80 cursor-pointer hover:border-slate-700 transition-colors"
+                  className="flex items-start gap-3 p-2.5 rounded-sm bg-canvas border border-line cursor-pointer hover:border-navy-600"
                 >
                   <input
                     type="checkbox"
                     checked={layersToExport[k]}
                     onChange={(e) => setLayersToExport(prev => ({ ...prev, [k]: e.target.checked }))}
-                    className="mt-0.5 rounded text-cyan-500 focus:ring-cyan-500 bg-slate-900 border-slate-700"
+                    className="mt-0.5 rounded-sm text-navy-800 focus:ring-navy-700 bg-white border-line"
                   />
                   <div>
-                    <p className="font-semibold text-slate-200">{item.label}</p>
-                    <p className="text-[11px] text-slate-400">{item.desc}</p>
+                    <p className="font-semibold text-ink">{item.label}</p>
+                    <p className="text-[11px] text-muted">{item.desc}</p>
                   </div>
                 </label>
               );
@@ -169,8 +169,8 @@ export const ExportPage: React.FC = () => {
         </div>
 
         {/* Format Selection */}
-        <div className="md:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
-          <h2 className="text-sm font-semibold text-slate-200 uppercase tracking-wider border-b border-slate-800 pb-2">
+        <div className="md:col-span-2 bg-white border border-line rounded-sm p-5 space-y-4">
+          <h2 className="text-sm font-semibold text-ink uppercase tracking-wider border-b border-line pb-2">
             2. Select Export Format & Generate
           </h2>
 
@@ -189,21 +189,21 @@ export const ExportPage: React.FC = () => {
                   key={fmt.id}
                   type="button"
                   onClick={() => setSelectedFormat(fmt.id as any)}
-                  className={`p-3.5 rounded-xl border text-left transition-all flex flex-col justify-between space-y-2 ${
+                  className={`p-3.5 rounded-sm border text-left flex flex-col justify-between space-y-2 cursor-pointer ${
                     isSel
-                      ? 'bg-cyan-950/60 border-cyan-500 text-cyan-300 shadow-md shadow-cyan-950/50'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                      ? 'bg-navy-50 border-navy-100 text-navy-950 font-semibold'
+                      : 'bg-canvas border-line text-muted hover:text-ink hover:bg-white'
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <Icon className={`w-5 h-5 ${isSel ? 'text-cyan-400' : 'text-slate-400'}`} />
-                    <span className="font-mono text-[10px] bg-slate-900 px-1.5 py-0.5 rounded text-slate-300 border border-slate-800">
+                    <Icon className={`w-5 h-5 ${isSel ? 'text-navy-700' : 'text-muted'}`} />
+                    <span className="font-mono text-[10px] bg-white px-1.5 py-0.5 rounded-sm text-ink border border-line font-medium">
                       {fmt.ext}
                     </span>
                   </div>
                   <div>
-                    <p className="font-semibold text-slate-200 text-xs">{fmt.name}</p>
-                    <p className="text-[10px] text-slate-400 mt-0.5 leading-tight">{fmt.desc}</p>
+                    <p className="font-semibold text-ink text-xs">{fmt.name}</p>
+                    <p className="text-[10px] text-muted mt-0.5 leading-tight">{fmt.desc}</p>
                   </div>
                 </button>
               );
@@ -211,10 +211,10 @@ export const ExportPage: React.FC = () => {
           </div>
 
           {/* Download Action Buttons */}
-          <div className="pt-4 border-t border-slate-800 flex flex-col sm:flex-row gap-3">
+          <div className="pt-4 border-t border-line flex flex-col sm:flex-row gap-3">
             <button
               onClick={handleDownload}
-              className="flex-1 inline-flex items-center justify-center gap-2.5 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-bold text-sm shadow-lg shadow-emerald-950/50 transition-all transform hover:-translate-y-0.5"
+              className="flex-1 inline-flex items-center justify-center gap-2.5 px-6 py-3 rounded-sm bg-forest-700 hover:bg-forest-600 text-white font-bold text-sm cursor-pointer"
             >
               <Download className="w-5 h-5" />
               <span>Export {selectedFormat.toUpperCase()} Data</span>
@@ -222,9 +222,9 @@ export const ExportPage: React.FC = () => {
 
             <button
               onClick={() => setReportModalOpen(true)}
-              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm border border-slate-700 transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-sm bg-navy-900 hover:bg-navy-800 text-white font-semibold text-sm border border-navy-900 cursor-pointer"
             >
-              <FileText className="w-4 h-4 text-cyan-400" />
+              <FileText className="w-4 h-4 text-navy-100" />
               <span>Generate PDF Summary Report</span>
             </button>
           </div>
@@ -233,48 +233,48 @@ export const ExportPage: React.FC = () => {
 
       {/* PDF Report Preview Modal */}
       {reportModalOpen && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 space-y-5 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 bg-navy-950/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white border border-line rounded-sm max-w-2xl w-full p-6 space-y-5 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-line pb-3">
               <div className="flex items-center gap-2">
-                <FileText className="w-5 h-5 text-cyan-400" />
-                <h3 className="font-bold text-slate-100 text-base">Cadastral Survey Executive Report</h3>
+                <FileText className="w-5 h-5 text-navy-700" />
+                <h3 className="font-bold text-ink text-base">Cadastral Survey Executive Report</h3>
               </div>
-              <span className="text-xs font-mono bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded border border-cyan-800">
+              <span className="text-xs font-mono bg-navy-50 text-navy-800 font-semibold px-2 py-0.5 rounded-sm border border-navy-100">
                 Generated Preview
               </span>
             </div>
 
-            <div className="bg-slate-950 border border-slate-800 rounded-xl p-5 space-y-4 text-xs">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-2 font-mono">
+            <div className="bg-canvas border border-line rounded-sm p-5 space-y-4 text-xs text-ink">
+              <div className="flex items-center justify-between border-b border-line pb-2 font-mono">
                 <div>
-                  <p className="font-bold text-slate-200 text-sm">{project?.name || 'Urban Zone A'}</p>
-                  <p className="text-slate-400">{project?.location}</p>
+                  <p className="font-bold text-ink text-sm">{project?.name || 'Urban Zone A'}</p>
+                  <p className="text-muted">{project?.location}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-slate-400">Date: {new Date().toLocaleDateString()}</p>
-                  <p className="text-emerald-400 font-semibold">Status: AI Verified</p>
+                  <p className="text-muted">Date: {new Date().toLocaleDateString()}</p>
+                  <p className="text-forest-800 font-semibold">Status: AI Verified</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-3 text-center">
-                <div className="p-2 bg-slate-900 rounded-lg">
-                  <p className="text-[10px] text-slate-400">Survey Area</p>
-                  <p className="font-bold text-slate-200">{project?.surveyAreaSqKm || 4.2} km²</p>
+                <div className="p-2.5 bg-white border border-line rounded-sm">
+                  <p className="text-[10px] text-muted uppercase font-semibold">Survey Area</p>
+                  <p className="font-bold text-ink mt-0.5">{project?.surveyAreaSqKm || 4.2} km²</p>
                 </div>
-                <div className="p-2 bg-slate-900 rounded-lg">
-                  <p className="text-[10px] text-slate-400">Parcels Mapped</p>
-                  <p className="font-bold text-cyan-400">247</p>
+                <div className="p-2.5 bg-white border border-line rounded-sm">
+                  <p className="text-[10px] text-muted uppercase font-semibold">Parcels Mapped</p>
+                  <p className="font-bold text-navy-900 mt-0.5">247</p>
                 </div>
-                <div className="p-2 bg-slate-900 rounded-lg">
-                  <p className="text-[10px] text-slate-400">Buildings Extracted</p>
-                  <p className="font-bold text-amber-400">381</p>
+                <div className="p-2.5 bg-white border border-line rounded-sm">
+                  <p className="text-[10px] text-muted uppercase font-semibold">Buildings Extracted</p>
+                  <p className="font-bold text-amber-800 mt-0.5">381</p>
                 </div>
               </div>
 
-              <div className="space-y-1 text-slate-300 leading-relaxed">
-                <p className="font-semibold text-slate-200">Executive Summary:</p>
-                <p className="text-[11px] text-slate-400">
+              <div className="space-y-1 text-ink leading-relaxed">
+                <p className="font-semibold text-ink">Executive Summary:</p>
+                <p className="text-[11px] text-muted">
                   Automated high-resolution drone orthomosaic processing completed with ResNet-50 + U-Net AI feature extraction pipeline. Mean boundary IoU achieved 88.4% with 94.7% confidence score across 247 urban parcel units in Vijayawada municipal zone.
                 </p>
               </div>
@@ -283,7 +283,7 @@ export const ExportPage: React.FC = () => {
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setReportModalOpen(false)}
-                className="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 text-xs font-medium"
+                className="px-4 py-2 rounded-sm bg-white border border-line text-ink text-xs font-medium hover:bg-navy-50 cursor-pointer"
               >
                 Close Preview
               </button>
@@ -292,7 +292,7 @@ export const ExportPage: React.FC = () => {
                   window.print();
                   setReportModalOpen(false);
                 }}
-                className="px-5 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold"
+                className="px-5 py-2 rounded-sm bg-navy-900 hover:bg-navy-800 text-white text-xs font-semibold cursor-pointer"
               >
                 Print / Save as PDF
               </button>

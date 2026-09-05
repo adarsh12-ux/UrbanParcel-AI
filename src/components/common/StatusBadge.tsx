@@ -9,32 +9,32 @@ interface StatusBadgeProps {
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' }) => {
   const sizeClasses = size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-2.5 py-1 text-xs';
 
-  let colorClasses = 'bg-slate-800 text-slate-300 border-slate-700';
+  let colorClasses = 'bg-canvas text-muted border-line';
 
   switch (status) {
     case 'Completed':
     case 'Verified':
-      colorClasses = 'bg-emerald-950/80 text-emerald-400 border-emerald-800/60 shadow-xs shadow-emerald-900/30';
+      colorClasses = 'bg-forest-50 text-forest-800 border-forest-100';
       break;
     case 'Processing':
     case 'Pending Review':
-      colorClasses = 'bg-cyan-950/80 text-cyan-400 border-cyan-800/60 animate-pulse';
+      colorClasses = 'bg-navy-50 text-navy-800 border-navy-100';
       break;
     case 'Draft':
-      colorClasses = 'bg-slate-800 text-slate-400 border-slate-700';
+      colorClasses = 'bg-canvas text-muted border-line';
       break;
     case 'Failed':
     case 'Flagged':
-      colorClasses = 'bg-amber-950/80 text-amber-400 border-amber-800/60';
+      colorClasses = 'bg-amber-50 text-amber-800 border-amber-200';
       break;
   }
 
   return (
-    <span className={`inline-flex items-center font-medium rounded-full border ${sizeClasses} ${colorClasses}`}>
+    <span className={`inline-flex items-center font-medium rounded-sm border ${sizeClasses} ${colorClasses}`}>
       <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-        status === 'Completed' || status === 'Verified' ? 'bg-emerald-400' :
-        status === 'Processing' || status === 'Pending Review' ? 'bg-cyan-400' :
-        status === 'Failed' || status === 'Flagged' ? 'bg-amber-400' : 'bg-slate-400'
+        status === 'Completed' || status === 'Verified' ? 'bg-forest-700' :
+        status === 'Processing' || status === 'Pending Review' ? 'bg-navy-600' :
+        status === 'Failed' || status === 'Flagged' ? 'bg-amber-600' : 'bg-slate-400'
       }`}></span>
       {status}
     </span>

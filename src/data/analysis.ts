@@ -11,12 +11,12 @@ export const SAMPLE_ANALYSIS: AnalysisMetrics = {
   totalWaterBodies: 12,
 
   landUseBreakdown: [
-    { name: 'Residential', value: 112, color: '#3b82f6' }, // Blue
-    { name: 'Commercial', value: 58, color: '#10b981' },  // Emerald
-    { name: 'Mixed Use', value: 34, color: '#8b5cf6' },   // Purple
-    { name: 'Government', value: 18, color: '#f59e0b' },  // Amber
-    { name: 'Industrial', value: 13, color: '#ef4444' },  // Red
-    { name: 'Vacant / Other', value: 12, color: '#64748b' } // Slate
+    { name: 'Residential', value: 112, color: '#2c5aa0' },
+    { name: 'Commercial', value: 58, color: '#1b6b4a' },
+    { name: 'Mixed Use', value: 34, color: '#5b4d8a' },
+    { name: 'Government', value: 18, color: '#b45309' },
+    { name: 'Industrial', value: 13, color: '#9b2c2c' },
+    { name: 'Vacant / Other', value: 12, color: '#5b6775' }
   ],
 
   confidenceDistribution: [

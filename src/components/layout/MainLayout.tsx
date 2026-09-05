@@ -48,7 +48,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, activeProject:
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-canvas text-ink flex flex-col font-sans">
       <Sidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}

@@ -102,16 +102,7 @@ export const AIProcessingPage: React.FC = () => {
 
   return (
     <div className="p-4 sm:p-6 lg:p-7 max-w-5xl mx-auto w-full space-y-5">
-      {/* Disclaimer Notice */}
-      <div className="flex items-center justify-between px-3.5 py-2 rounded bg-slate-50 border border-slate-200 text-xs text-slate-700 font-medium">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-3.5 h-3.5 text-teal-700 shrink-0" />
-          <span>Prototype processing pipeline demonstration — Smart India Hackathon</span>
-        </div>
-        <span className="bg-white text-slate-600 px-2 py-0.5 rounded font-mono text-[10px] border border-slate-200 hidden sm:inline">
-          CUDA Node Simulation
-        </span>
-      </div>
+
 
       {/* Header */}
       <div className="border-b border-slate-200 pb-3.5 space-y-0.5">

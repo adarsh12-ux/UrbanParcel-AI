@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
 interface AuthContextType {
   user: GovernmentEmployee | null;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   loading: boolean;
   isConfigured: boolean;
   login: (credentials: LoginCredentials) => Promise<AuthResponse>;
@@ -84,11 +85,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return await authService.resetPassword(employeeIdOrEmail);
   }, []);
 
+  const isAdmin = Boolean(user && user.role === 'admin' && user.isApproved);
+
   return (
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated: !!user,
+        isAuthenticated: Boolean(user && user.isApproved),
+        isAdmin,
         loading,
         isConfigured,
         login,

@@ -5,10 +5,11 @@ import { ShieldAlert } from 'lucide-react';
 
 interface ProtectedRouteProps {
   children?: React.ReactNode;
+  requireAdmin?: boolean;
 }
 
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin = false }) => {
+  const { isAuthenticated, isAdmin, user, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -23,9 +24,14 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     );
   }
 
-  if (!isAuthenticated) {
-    // Redirect unauthenticated users to /login preserving the attempted path
+  // Redirect unauthenticated or unapproved users to /login
+  if (!isAuthenticated || !user || !user.isApproved) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // If route requires admin role and user is not an admin, redirect to dashboard
+  if (requireAdmin && !isAdmin) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   return children ? <>{children}</> : null;

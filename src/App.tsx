@@ -13,6 +13,7 @@ import { GISMapPage } from './pages/GISMapPage';
 import { ParcelDetailPage } from './pages/ParcelDetailPage';
 import { AnalysisPage } from './pages/AnalysisPage';
 import { ExportPage } from './pages/ExportPage';
+import { EmployeeManagementPage } from './pages/EmployeeManagementPage';
 import { Project } from './types';
 
 const AuthenticatedWorkspace: React.FC = () => {
@@ -32,6 +33,11 @@ const AuthenticatedWorkspace: React.FC = () => {
           <Route path="/projects/:id/parcel/:parcelId" element={<ParcelDetailPage />} />
           <Route path="/projects/:id/analysis" element={<AnalysisPage />} />
           <Route path="/projects/:id/export" element={<ExportPage />} />
+          <Route path="/admin/employees" element={
+            <ProtectedRoute requireAdmin={true}>
+              <EmployeeManagementPage />
+            </ProtectedRoute>
+          } />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </MainLayout>

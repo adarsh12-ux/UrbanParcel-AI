@@ -159,19 +159,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, activeProject
           <div className="flex items-center justify-between px-2 py-0.5 text-[11px] text-slate-400">
             <span className="flex items-center gap-1.5 font-medium">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-              <span className="text-[10px]">AUTH SESSION ACTIVE</span>
+              <span className="text-[10px]">AUTH SESSION</span>
             </span>
-            <span className="font-mono text-[9px] text-teal-400">{user?.id || 'AP-REV-2024'}</span>
+            <span className="font-mono text-[9px] text-teal-400">{user?.id || 'AUTHENTICATED'}</span>
           </div>
 
           <div className="flex items-center justify-between gap-2 px-2 py-1.5 rounded bg-slate-900 border border-slate-800">
             <div className="flex items-center gap-2 overflow-hidden">
               <div className="w-6 h-6 rounded bg-teal-900 border border-teal-700 flex items-center justify-center text-teal-200 font-semibold text-[10px] shrink-0">
-                {user?.avatarInitials || 'AS'}
+                {user?.avatarInitials || 'GO'}
               </div>
               <div className="overflow-hidden">
-                <p className="text-[11px] font-medium text-slate-200 truncate">{user?.name || 'Adarsh Sharma'}</p>
-                <p className="text-[9px] text-slate-400 truncate">{user?.designation || 'Senior Cadastral Surveyor'}</p>
+                <p className="text-[11px] font-medium text-slate-200 truncate">{user?.name || 'Cadastral Officer'}</p>
+                <p className="text-[9px] text-slate-400 truncate">{user?.designation || 'Survey Specialist'}</p>
               </div>
             </div>
 

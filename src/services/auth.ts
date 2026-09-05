@@ -1,136 +1,132 @@
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { GovernmentEmployee, LoginCredentials, AuthResponse } from '../types';
 
-// Storage keys
-const AUTH_SESSION_KEY = 'urbanparcel_auth_session';
-const REMEMBER_ME_KEY = 'urbanparcel_remember_me';
+/**
+ * Derives avatar initials from a full name or email identifier.
+ */
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+}
 
 /**
- * Approved Government Employee Demo Profiles
- * Note: These are simulated employee identities for prototype demonstration and testing.
- * In a production deployment, this is replaced by an authorized government identity provider (e.g. NIC SSO / Parichay / OIDC).
+ * Maps a Supabase user session to a GovernmentEmployee object.
  */
-export const DEMO_GOVERNMENT_EMPLOYEES: GovernmentEmployee[] = [
-  {
-    id: 'AP-REV-2024',
-    name: 'Adarsh Sharma',
-    designation: 'Senior Cadastral Surveyor',
-    department: 'Department of Land Records & Survey',
-    zone: 'Vijayawada Urban Zone 01',
-    role: 'Cadastral Officer',
-    email: 'adarsh.sharma@gov.in',
-    avatarInitials: 'AS',
-    securityClearance: 'Level 3 - Cadastral Full Access',
-    lastLogin: 'Today, 09:15 AM'
-  },
-  {
-    id: 'MUNI-GIS-881',
-    name: 'Priya Sundaram',
-    designation: 'Municipal Town Planning GIS Officer',
-    department: 'Urban Development & Municipal Administration',
-    zone: 'Amaravati Capital Region (CRDA)',
-    role: 'Town Planner',
-    email: 'priya.sundaram@gov.in',
-    avatarInitials: 'PS',
-    securityClearance: 'Level 2 - Planning & Vector Analytics',
-    lastLogin: 'Yesterday, 04:30 PM'
-  },
-  {
-    id: 'REV-INSP-402',
-    name: 'Rajesh Varma',
-    designation: 'Revenue Field Inspector',
-    department: 'District Revenue & Settlement Office',
-    zone: 'Krishna District Cadastral Div 04',
-    role: 'Revenue Inspector',
-    email: 'rajesh.varma@gov.in',
-    avatarInitials: 'RV',
-    securityClearance: 'Level 2 - Field Parcel Verification',
-    lastLogin: '02 Sep 2026, 11:20 AM'
+function mapSupabaseUserToEmployee(user: any): GovernmentEmployee {
+  const meta = user.user_metadata || {};
+  const emailPrefix = (user.email || '').split('@')[0];
+
+  return {
+    id: meta.employee_id || emailPrefix.toUpperCase() || 'EMP-GOV',
+    name: meta.full_name || meta.name || emailPrefix || 'Government Officer',
+    designation: meta.designation || 'Cadastral Survey Specialist',
+    department: meta.department || 'Department of Land Records & Survey',
+    zone: meta.zone || 'State Urban Cadastral Zone',
+    role: meta.role || 'Cadastral Officer',
+    email: user.email || '',
+    avatarInitials: getInitials(meta.full_name || meta.name || emailPrefix || 'GO'),
+    securityClearance: meta.security_clearance || 'Authorized Cadastral Access',
+    lastLogin: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ', Today'
+  };
+}
+
+/**
+ * Converts a raw Employee ID into a standardized authentication email.
+ * If the user inputs an email (contains @), it is used directly.
+ * Otherwise, it is formatted to the standard internal employee domain: <employee_id>@urbanparcel.gov
+ */
+export function formatEmployeeIdToEmail(employeeId: string): string {
+  const trimmed = employeeId.trim();
+  if (trimmed.includes('@')) {
+    return trimmed.toLowerCase();
   }
-];
+  const cleanId = trimmed.toLowerCase().replace(/[^a-z0-9._-]/g, '');
+  return `${cleanId}@urbanparcel.gov`;
+}
 
 export const authService = {
   /**
-   * Prototype Demo Authentication
-   * Validates against the approved demo employee IDs.
-   *
-   * PRODUCTION NOTE:
-   * To connect a real government identity provider (e.g., NIC SSO, Parichay, OpenID Connect, OAuth2, SAML 2.0):
-   * Replace this method with an HTTP POST call to your backend `/api/auth/login` or redirect to your IDP's authorization endpoint:
-   *
-   *   const response = await fetch('/api/v1/auth/government-login', {
-   *     method: 'POST',
-   *     headers: { 'Content-Type': 'application/json' },
-   *     body: JSON.stringify(credentials)
-   *   });
-   *   return await response.json();
+   * Checks if Supabase backend environment variables are configured.
+   */
+  isConfigured(): boolean {
+    return isSupabaseConfigured();
+  },
+
+  /**
+   * Authenticates a government employee against Supabase Auth.
    */
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    // Simulate network authentication handshake
-    await new Promise(resolve => setTimeout(resolve, 450));
+    const rawId = credentials.employeeId.trim();
+    const password = credentials.password || '';
 
-    const normalizedId = credentials.employeeId.trim().toUpperCase();
-
-    if (!normalizedId) {
+    if (!rawId) {
       return {
         success: false,
         error: 'Please enter your Government Employee ID.'
       };
     }
 
-    if (!credentials.password || credentials.password.trim().length === 0) {
+    if (!password) {
       return {
         success: false,
-        error: 'Please enter your account password.'
+        error: 'Please enter your password.'
       };
     }
 
-    // Match against approved demo employee IDs
-    const matchedEmployee = DEMO_GOVERNMENT_EMPLOYEES.find(
-      emp => emp.id.toUpperCase() === normalizedId
-    );
-
-    if (!matchedEmployee) {
+    if (!isSupabaseConfigured() || !supabase) {
       return {
         success: false,
-        error: `Employee ID "${normalizedId}" is not registered in the approved cadastral employee registry. (Demo IDs: AP-REV-2024, MUNI-GIS-881, REV-INSP-402)`
+        error: 'Authentication service is not configured. Please supply VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file.'
       };
     }
 
-    // Generate mock authenticated session token
-    const token = `gov_token_${matchedEmployee.id.toLowerCase()}_${Date.now()}`;
-    const userSession: GovernmentEmployee = {
-      ...matchedEmployee,
-      lastLogin: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ', Today'
-    };
+    try {
+      const email = formatEmployeeIdToEmail(rawId);
 
-    // Store session according to Remember Me preference
-    if (credentials.rememberMe) {
-      localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(userSession));
-      localStorage.setItem(REMEMBER_ME_KEY, 'true');
-    } else {
-      sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(userSession));
-      localStorage.removeItem(REMEMBER_ME_KEY);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error || !data.user) {
+        // Generic response to avoid revealing employee account existence
+        return {
+          success: false,
+          error: 'Invalid employee ID or password.'
+        };
+      }
+
+      const employee = mapSupabaseUserToEmployee(data.user);
+
+      return {
+        success: true,
+        user: employee,
+        token: data.session?.access_token
+      };
+    } catch (err) {
+      console.error('Authentication request error:', err);
+      return {
+        success: false,
+        error: 'Invalid employee ID or password.'
+      };
     }
-
-    return {
-      success: true,
-      user: userSession,
-      token
-    };
   },
 
   /**
-   * Retrieves the currently active user session from localStorage or sessionStorage.
+   * Retrieves the current authenticated user session from Supabase.
    */
-  getCurrentUser(): GovernmentEmployee | null {
+  async getCurrentSession(): Promise<GovernmentEmployee | null> {
+    if (!isSupabaseConfigured() || !supabase) {
+      return null;
+    }
+
     try {
-      const localData = localStorage.getItem(AUTH_SESSION_KEY);
-      if (localData) {
-        return JSON.parse(localData);
-      }
-      const sessionData = sessionStorage.getItem(AUTH_SESSION_KEY);
-      if (sessionData) {
-        return JSON.parse(sessionData);
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.user) {
+        return mapSupabaseUserToEmployee(data.session.user);
       }
     } catch {
       return null;
@@ -139,24 +135,53 @@ export const authService = {
   },
 
   /**
-   * Checks if an employee session is active and valid.
+   * Signs out the user and clears Supabase session tokens.
    */
-  isAuthenticated(): boolean {
-    return this.getCurrentUser() !== null;
+  async logout(): Promise<void> {
+    if (isSupabaseConfigured() && supabase) {
+      try {
+        await supabase.auth.signOut();
+      } catch (err) {
+        console.error('Error signing out:', err);
+      }
+    }
   },
 
   /**
-   * Logs out the user and clears all stored session data.
+   * Initiates a password reset email via Supabase Auth.
    */
-  logout(): void {
-    localStorage.removeItem(AUTH_SESSION_KEY);
-    sessionStorage.removeItem(AUTH_SESSION_KEY);
-  },
+  async resetPassword(employeeIdOrEmail: string): Promise<{ success: boolean; message: string }> {
+    if (!isSupabaseConfigured() || !supabase) {
+      return {
+        success: false,
+        message: 'Authentication service is not configured. Please check your .env settings.'
+      };
+    }
 
-  /**
-   * Returns the list of approved demo employee identities for quick selection in demo mode.
-   */
-  getDemoEmployees(): GovernmentEmployee[] {
-    return DEMO_GOVERNMENT_EMPLOYEES;
+    const email = formatEmployeeIdToEmail(employeeIdOrEmail);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/login',
+      });
+
+      if (error) {
+        // Return a generic security response
+        return {
+          success: true,
+          message: 'If this employee ID is registered, instructions to reset your password have been dispatched to your authorized email address.'
+        };
+      }
+
+      return {
+        success: true,
+        message: 'Password reset instructions have been sent to your registered government email address.'
+      };
+    } catch {
+      return {
+        success: true,
+        message: 'If this employee ID is registered, instructions to reset your password have been dispatched to your authorized email address.'
+      };
+    }
   }
 };

@@ -10,7 +10,15 @@ import {
   Box,
   Compass,
   ChevronRight,
-  Activity
+  Activity,
+  Upload,
+  FileCheck,
+  Database,
+  BrainCircuit,
+  Map,
+  ClipboardCheck,
+  Server,
+  FileOutput
 } from 'lucide-react';
 import { Project } from '../types';
 import { api } from '../services/api';
@@ -226,33 +234,46 @@ export const DashboardPage: React.FC = () => {
           <span className="text-[10px] font-mono text-slate-500">8 Automated Operational Steps</span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2 text-center text-xs">
+        <p className="text-[11px] text-slate-500 -mt-1">
+          Standard sequence for converting validated UAV imagery into reviewable cadastral records and reports.
+        </p>
+
+        <div className="flex flex-wrap gap-2 xl:flex-nowrap xl:gap-0" aria-label="Cadastral feature extraction workflow">
           {[
-            { step: '01', title: 'Survey Setup', active: true },
-            { step: '02', title: 'Create Project', active: false },
-            { step: '03', title: 'Upload UAV', active: false },
-            { step: '04', title: 'AI Pipeline', active: false },
-            { step: '05', title: 'GIS Spatial Map', active: false },
-            { step: '06', title: 'Cadastral Record', active: false },
-            { step: '07', title: 'Feature Analytics', active: false },
-            { step: '08', title: 'Official Export', active: false }
-          ].map((item) => (
-            <div
-              key={item.step}
-              className={`p-2 rounded border transition-colors ${
-                item.active
-                  ? 'bg-teal-50/80 border-teal-200 text-teal-950 font-semibold'
-                  : 'bg-slate-50 border-slate-200 text-slate-500'
-              }`}
-            >
-              <div className={`w-4.5 h-4.5 rounded mx-auto mb-1 flex items-center justify-center font-mono text-[9px] ${
-                item.active ? 'bg-teal-700 text-white font-bold' : 'bg-white text-slate-500 border border-slate-200'
-              }`}>
-                {item.step}
+            { step: '01', title: 'Upload Drone Imagery', description: 'Submit orthomosaic source', icon: Upload, active: true },
+            { step: '02', title: 'Validate GeoTIFF', description: 'Check format and projection', icon: FileCheck, active: false },
+            { step: '03', title: 'Extract Spatial Metadata', description: 'Read CRS and coverage', icon: Database, active: false },
+            { step: '04', title: 'AI Feature Extraction', description: 'Identify mapped features', icon: BrainCircuit, active: false },
+            { step: '05', title: 'Generate Parcel Boundaries', description: 'Build cadastral polygons', icon: Map, active: false },
+            { step: '06', title: 'Review and Verify Data', description: 'Confirm geometry and attributes', icon: ClipboardCheck, active: false },
+            { step: '07', title: 'Store in PostGIS', description: 'Persist authoritative layers', icon: Server, active: false },
+            { step: '08', title: 'Export Cadastral Reports', description: 'Prepare official outputs', icon: FileOutput, active: false }
+          ].map((item, index, items) => {
+            const Icon = item.icon;
+            return (
+              <div key={item.step} className="flex min-w-[calc(50%-0.25rem)] items-stretch sm:min-w-[calc(25%-0.375rem)] xl:min-w-0 xl:flex-1">
+                <div className={`flex min-h-[112px] w-full flex-col rounded border p-2.5 ${
+                  item.active
+                    ? 'border-teal-200 bg-teal-50/80 text-teal-950'
+                    : 'border-slate-200 bg-slate-50 text-slate-700'
+                }`}>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded font-mono text-[9px] font-bold ${
+                      item.active ? 'bg-teal-700 text-white' : 'border border-slate-200 bg-white text-slate-500'
+                    }`}>
+                      {item.step}
+                    </span>
+                    <Icon className={`h-3.5 w-3.5 shrink-0 ${item.active ? 'text-teal-700' : 'text-slate-500'}`} aria-hidden="true" />
+                  </div>
+                  <p className="mt-2 text-[11px] font-semibold leading-tight">{item.title}</p>
+                  <p className="mt-1 text-[10px] leading-tight text-slate-500">{item.description}</p>
+                </div>
+                {index < items.length - 1 && (
+                  <ArrowRight className="mx-1 hidden w-3 shrink-0 self-center text-slate-300 xl:block" aria-hidden="true" />
+                )}
               </div>
-              <p className="truncate text-[10px] leading-tight">{item.title}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

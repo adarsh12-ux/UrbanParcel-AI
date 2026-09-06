@@ -35,33 +35,53 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, activeProject
       name: 'Dashboard',
       path: '/dashboard',
       icon: LayoutDashboard,
-      section: 'OVERVIEW'
+      section: 'OVERVIEW',
+      requiresProject: false
     },
     {
       name: 'Survey Projects',
       path: '/projects',
       icon: Layers,
-      section: 'OVERVIEW'
+      section: 'OVERVIEW',
+      requiresProject: false
     },
     {
       name: 'Interactive GIS Map',
-      path: activeProjectId ? `/projects/${activeProjectId}/map` : '/projects',
+      path: activeProjectId
+        ? `/projects/${activeProjectId}/map`
+        : '/projects',
       icon: Map,
-      section: 'SPATIAL WORKSPACE'
+      section: 'SPATIAL WORKSPACE',
+      requiresProject: true
     },
     {
       name: 'AI Feature Analytics',
       path: activeProjectId ? `/projects/${activeProjectId}/analysis` : '/projects',
       icon: BarChart3,
-      section: 'SPATIAL WORKSPACE'
+      section: 'SPATIAL WORKSPACE',
+      requiresProject: true
     },
     {
       name: 'Cadastral Export & Reports',
       path: activeProjectId ? `/projects/${activeProjectId}/export` : '/projects',
       icon: Download,
-      section: 'OUTPUT'
+      section: 'OUTPUT',
+      requiresProject: true
     }
   ];
+
+  const handleNavigation = (event: React.MouseEvent<HTMLAnchorElement>, item: typeof navItems[number]) => {
+    if (item.requiresProject && !activeProjectId) {
+      event.preventDefault();
+      const message = item.name === 'Interactive GIS Map'
+        ? 'Please select a survey project to open the GIS map.'
+        : `Please select a survey project to open the ${item.name.toLowerCase()}.`;
+      navigate('/projects', {
+        state: { message }
+      });
+    }
+    onClose();
+  };
 
   return (
     <>
@@ -122,16 +142,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, activeProject
 
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = location.pathname === item.path ||
-              (item.path.includes('/map') && location.pathname.includes('/map')) ||
-              (item.path.includes('/analysis') && location.pathname.includes('/analysis')) ||
-              (item.path.includes('/export') && location.pathname.includes('/export'));
+            const isActive = item.name === 'Dashboard'
+              ? location.pathname === '/dashboard'
+              : item.name === 'Survey Projects'
+                ? location.pathname === '/projects' || location.pathname === '/projects/new'
+                : item.name === 'Interactive GIS Map'
+                  ? location.pathname.includes('/map')
+                  : item.name === 'AI Feature Analytics'
+                    ? location.pathname.includes('/analysis')
+                    : location.pathname.includes('/export');
 
             return (
               <NavLink
                 key={item.name}
                 to={item.path}
-                onClick={onClose}
+                onClick={(event) => handleNavigation(event, item)}
                 className={`flex items-center gap-2.5 px-2.5 py-2 text-xs transition-colors rounded ${
                   isActive
                     ? 'bg-slate-800/90 text-white font-semibold border-l-2 border-teal-500 rounded-l-none pl-2'
@@ -149,7 +174,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, activeProject
         <div className="px-3 py-2 mx-2.5 mb-2 rounded bg-slate-950/60 border border-slate-800 text-xs text-slate-400 space-y-0.5">
           <div className="flex items-center justify-between font-medium text-slate-200 text-[11px]">
             <span>Smart India Hackathon</span>
-            <span className="bg-teal-950 text-teal-300 px-1 py-0.2 rounded text-[9px] font-mono border border-teal-800/50">SIH-2024</span>
+            <span className="bg-teal-950 text-teal-300 px-1 py-0.2 rounded text-[9px] font-mono border border-teal-800/50">SIH-2026</span>
           </div>
           <p className="text-[10px] leading-tight text-slate-400">Drone AI Cadastral Mapping System</p>
         </div>

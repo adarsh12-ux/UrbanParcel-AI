@@ -97,7 +97,42 @@ export const GISMapPage: React.FC = () => {
       setSelectedParcel(match);
     }
   };
+  if (loading) {
+  return (
+    <div className="flex-1 min-h-screen flex items-center justify-center bg-slate-100">
+      <div className="text-center">
+        <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-4 border-slate-300 border-t-teal-700" />
 
+        <p className="text-sm font-medium text-slate-700">
+          Loading GIS workspace...
+        </p>
+      </div>
+    </div>
+  );
+}
+
+if (error) {
+  return (
+    <div className="flex-1 min-h-screen flex items-center justify-center bg-slate-100 p-6">
+      <div className="max-w-md rounded-lg border border-red-200 bg-white p-6 text-center shadow-sm">
+        <h2 className="mb-2 text-lg font-bold text-red-700">
+          Unable to open project
+        </h2>
+
+        <p className="mb-4 text-sm text-slate-600">
+          {error}
+        </p>
+
+        <button
+          onClick={() => navigate('/projects')}
+          className="rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-600"
+        >
+          Back to Survey Projects
+        </button>
+      </div>
+    </div>
+  );
+}
   return (
     <div className="flex-1 flex flex-col relative h-[calc(100vh-56px)] overflow-hidden bg-slate-100">
       {/* Map Header Toolbar */}

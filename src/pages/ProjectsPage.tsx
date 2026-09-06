@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Layers, MapPin, PlusCircle, Search, ArrowRight, Filter, Compass, AlertCircle, FolderOpen, Trash2, X } from 'lucide-react';
 import { Project } from '../types';
 import { api } from '../services/api';
@@ -14,6 +14,8 @@ export const ProjectsPage: React.FC = () => {
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const navigationMessage = (location.state as { message?: string } | null)?.message;
 
   useEffect(() => {
     async function loadData() {
@@ -81,6 +83,13 @@ export const ProjectsPage: React.FC = () => {
         <div className="p-3 bg-rose-50 border border-rose-200 rounded flex items-start gap-2 text-xs text-rose-800">
           <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
           <span className="leading-tight">{error}</span>
+        </div>
+      )}
+
+      {navigationMessage && !error && (
+        <div className="p-3 bg-amber-50 border border-amber-200 rounded flex items-start gap-2 text-xs text-amber-900">
+          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          <span className="leading-tight">{navigationMessage}</span>
         </div>
       )}
 

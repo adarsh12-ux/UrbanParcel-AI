@@ -35,6 +35,23 @@ function mapDbProject(row: any): Project {
 // Processing states map for active sessions
 const processingStates = new Map<string, ProcessingState>();
 
+function withTimeout<T>(promise: PromiseLike<T>, message: string, timeoutMs = 10000): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timeoutId = window.setTimeout(() => reject(new Error(message)), timeoutMs);
+
+    promise.then(
+      (value) => {
+        window.clearTimeout(timeoutId);
+        resolve(value);
+      },
+      (error) => {
+        window.clearTimeout(timeoutId);
+        reject(error);
+      }
+    );
+  });
+}
+
 const DEFAULT_PIPELINE_STEPS = [
   { id: 1, name: 'Image Preprocessing', description: 'Radiometric calibration & cloud masking', status: 'pending' as const },
   { id: 2, name: 'Orthomosaic Preparation', description: 'GSD calculation & GeoTIFF alignment', status: 'pending' as const },
@@ -50,13 +67,14 @@ export const api = {
   // Get all projects from real Supabase database
   async getProjects(): Promise<Project[]> {
     if (!isSupabaseConfigured() || !supabase) {
-      throw new Error('Supabase is not configured. Please supply VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file.');
+      console.warn('Supabase not configured; returning empty project list.');
+      return [];
     }
 
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const { data, error } = await withTimeout(
+      supabase.from('projects').select('*').order('created_at', { ascending: false }),
+      'Timed out loading survey projects. Please try again.'
+    );
 
     if (error) {
       console.error('Failed to query projects from Supabase:', error);
@@ -69,14 +87,14 @@ export const api = {
   // Get project by ID from real Supabase database
   async getProject(id: string): Promise<Project | null> {
     if (!isSupabaseConfigured() || !supabase) {
-      throw new Error('Supabase is not configured. Please check your .env file.');
+      console.warn('Supabase not configured; getProject returning null.');
+      return null;
     }
 
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
+    const { data, error } = await withTimeout(
+      supabase.from('projects').select('*').eq('id', id).maybeSingle(),
+      'Timed out loading the survey project. Please try again.'
+    );
 
     if (error) {
       console.error(`Failed to query project ${id} from Supabase:`, error);

@@ -8,6 +8,7 @@ import {
   Compass,
   ArrowRight
 } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { AnalysisMetrics, GroundTruthComparison } from '../types';
 import { api } from '../services/api';
 
@@ -30,23 +31,50 @@ export const AnalysisPage: React.FC = () => {
 
   const [metrics, setMetrics] = useState<AnalysisMetrics | null>(null);
   const [selectedComparison, setSelectedComparison] = useState<GroundTruthComparison | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadAnalysis() {
-      if (!id) return;
-      const data = await api.getAnalysis(id);
-      setMetrics(data);
-      if (data.groundTruthComparisons.length > 0) {
-        setSelectedComparison(data.groundTruthComparisons[0]);
+      if (!id) {
+        setError('No survey project was selected for analytics.');
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await api.getAnalysis(id);
+        setMetrics(data);
+        if (data.groundTruthComparisons.length > 0) {
+          setSelectedComparison(data.groundTruthComparisons[0]);
+        }
+      } catch (err: any) {
+        console.error('Failed to load analysis:', err);
+        setError(err?.message || 'Unable to load AI feature analytics.');
+      } finally {
+        setLoading(false);
       }
     }
     loadAnalysis();
   }, [id]);
 
-  if (!metrics) {
+  if (loading) {
     return (
       <div className="p-6 max-w-5xl mx-auto space-y-4">
         <div className="h-48 rounded bg-white border border-slate-200 animate-pulse" />
+      </div>
+    );
+  }
+
+  if (error || !metrics) {
+    return (
+      <div className="p-6 max-w-5xl mx-auto">
+        <div className="rounded border border-rose-200 bg-rose-50 p-5 text-center text-sm text-rose-800">
+          <AlertCircle className="mx-auto mb-2 h-5 w-5 text-rose-600" />
+          <p>{error || 'No analytics data is available for this project.'}</p>
+          <button onClick={() => navigate('/projects')} className="mt-4 rounded bg-teal-700 px-3 py-2 text-xs font-medium text-white">Back to Survey Projects</button>
+        </div>
       </div>
     );
   }

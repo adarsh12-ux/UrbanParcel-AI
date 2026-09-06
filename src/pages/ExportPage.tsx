@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Download, FileJson, FileSpreadsheet, FileCode, Archive, Image, FileText, Compass } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Download, FileJson, FileSpreadsheet, FileCode, Archive, Image, FileText, Compass, AlertCircle } from 'lucide-react';
 import { Project, Parcel } from '../types';
 import { api } from '../services/api';
 import { Toast, ToastMessage } from '../components/common/Toast';
 
 export const ExportPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
   const [project, setProject] = useState<Project | null>(null);
   const [parcels, setParcels] = useState<Parcel[]>([]);
   const [toast, setToast] = useState<ToastMessage | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [selectedFormat, setSelectedFormat] = useState<'geojson' | 'csv' | 'kml' | 'shapefile' | 'geotiff'>('geojson');
   const [layersToExport, setLayersToExport] = useState({
@@ -24,16 +27,46 @@ export const ExportPage: React.FC = () => {
 
   useEffect(() => {
     async function loadData() {
-      if (!id) return;
-      const [projData, parcelData] = await Promise.all([
-        api.getProject(id),
-        api.getParcels(id)
-      ]);
-      setProject(projData);
-      setParcels(parcelData);
+      if (!id) {
+        setError('No survey project was selected for export.');
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      setError(null);
+      try {
+        const [projData, parcelData] = await Promise.all([api.getProject(id), api.getParcels(id)]);
+        if (!projData) {
+          setError(`Survey project "${id}" was not found.`);
+          return;
+        }
+        setProject(projData);
+        setParcels(parcelData);
+      } catch (err: any) {
+        console.error('Failed to load export data:', err);
+        setError(err?.message || 'Unable to load export data.');
+      } finally {
+        setLoading(false);
+      }
     }
     loadData();
   }, [id]);
+
+  if (loading) {
+    return <div className="p-6 max-w-5xl mx-auto"><div className="h-48 rounded bg-white border border-slate-200 animate-pulse" /></div>;
+  }
+
+  if (error || !project) {
+    return (
+      <div className="p-6 max-w-5xl mx-auto">
+        <div className="rounded border border-rose-200 bg-rose-50 p-5 text-center text-sm text-rose-800">
+          <AlertCircle className="mx-auto mb-2 h-5 w-5 text-rose-600" />
+          <p>{error || 'No export data is available for this project.'}</p>
+          <button onClick={() => navigate('/projects')} className="mt-4 rounded bg-teal-700 px-3 py-2 text-xs font-medium text-white">Back to Survey Projects</button>
+        </div>
+      </div>
+    );
+  }
 
   const handleDownload = () => {
     const projName = project?.name.replace(/\s+/g, '_') || 'Urban_Zone_01';

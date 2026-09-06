@@ -20,14 +20,22 @@ import { StatusBadge } from '../components/common/StatusBadge';
 export const DashboardPage: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     async function loadData() {
       setLoading(true);
-      const data = await api.getProjects();
-      setProjects(data);
-      setLoading(false);
+      setError(null);
+      try {
+        const data = await api.getProjects();
+        setProjects(data);
+      } catch (err: any) {
+        console.error('Failed to load dashboard projects:', err);
+        setError(err?.message || 'Unable to load dashboard project data.');
+      } finally {
+        setLoading(false);
+      }
     }
     loadData();
   }, []);
@@ -70,6 +78,12 @@ export const DashboardPage: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {error && (
+        <div className="rounded border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">
+          {error}
+        </div>
+      )}
 
       {/* Cadastral Land System KPI Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

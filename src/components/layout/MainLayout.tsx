@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { Project } from '../../types';
@@ -16,15 +17,18 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, activeProject:
   const [projects, setProjects] = useState<Project[]>([]);
   const [activeProject, setActiveProject] = useState<Project | null>(propActiveProject || null);
   const [toast, setToast] = useState<ToastMessage | null>(null);
+  const [projectLoadError, setProjectLoadError] = useState<string | null>(null);
+  const location = useLocation();
 
   useEffect(() => {
     async function loadProjects() {
-      const data = await api.getProjects();
-      setProjects(data);
-      if (!activeProject && data.length > 0) {
-        const defaultProj = data[0];
-        setActiveProject(defaultProj);
-        if (onProjectChange) onProjectChange(defaultProj);
+      try {
+        const data = await api.getProjects();
+        setProjects(data);
+        setProjectLoadError(null);
+      } catch (err: any) {
+        console.error('Failed to load projects for navigation:', err);
+        setProjectLoadError(err?.message || 'Unable to load survey projects.');
       }
     }
     loadProjects();
@@ -32,9 +36,19 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, activeProject:
 
   useEffect(() => {
     if (propActiveProject) {
-      setActiveProject(propActiveProject);
+      if (propActiveProject.id !== activeProject?.id) setActiveProject(propActiveProject);
+      return;
     }
-  }, [propActiveProject]);
+
+    const routeProjectId = location.pathname.match(/^\/projects\/([^/]+)/)?.[1];
+    const routeProject = routeProjectId && projects.find(project => project.id === routeProjectId);
+    const nextProject = routeProject || activeProject || projects[0] || null;
+
+    if (nextProject && nextProject.id !== activeProject?.id) {
+      setActiveProject(nextProject);
+      onProjectChange?.(nextProject);
+    }
+  }, [location.pathname, projects, propActiveProject]);
 
   const handleSelectProject = (project: Project) => {
     setActiveProject(project);
@@ -69,6 +83,11 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, activeProject:
       </div>
 
       <Toast toast={toast} onClose={() => setToast(null)} />
+      {projectLoadError && (
+        <div className="fixed bottom-4 right-4 z-[60] max-w-sm rounded border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-800 shadow-lg">
+          {projectLoadError}
+        </div>
+      )}
     </div>
   );
 };

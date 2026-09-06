@@ -239,7 +239,7 @@ export const DashboardPage: React.FC = () => {
           Standard sequence for converting validated UAV imagery into reviewable cadastral records and reports.
         </p>
 
-        <div className="flex flex-wrap gap-2 xl:flex-nowrap xl:gap-0" aria-label="Cadastral feature extraction workflow">
+        <div className="grid auto-rows-fr grid-cols-2 gap-2 sm:grid-cols-4 xl:flex xl:flex-nowrap xl:gap-0" aria-label="Cadastral feature extraction workflow">
           {[
             { step: '01', title: 'Upload Drone Imagery', description: 'Submit orthomosaic source', icon: Upload },
             { step: '02', title: 'Validate GeoTIFF', description: 'Check format and projection', icon: FileCheck },
@@ -253,7 +253,7 @@ export const DashboardPage: React.FC = () => {
             const Icon = item.icon;
             const isActive = item.step === activeStep;
             return (
-              <div key={item.step} className="flex min-w-[calc(50%-0.25rem)] items-stretch sm:min-w-[calc(25%-0.375rem)] xl:min-w-0 xl:flex-1">
+              <div key={item.step} className="flex min-w-0 items-stretch xl:flex-1">
                 <button
                   type="button"
                   onClick={() => setActiveStep(item.step)}

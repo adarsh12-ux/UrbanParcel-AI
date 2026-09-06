@@ -90,11 +90,14 @@ export const DroneUploadPage: React.FC = () => {
     setPreviewLoading(true);
     selectedUploadRef.current = null;
 
-    const isTiff = file.name.toLowerCase().endsWith('.tif') || file.name.toLowerCase().endsWith('.tiff');
+    const lowerCaseFileName = file.name.toLowerCase();
+    const isTiff = lowerCaseFileName.endsWith('.tif')
+      || lowerCaseFileName.endsWith('.tiff')
+      || lowerCaseFileName.endsWith('.geotiff');
     const sizeMb = parseFloat((file.size / (1024 * 1024)).toFixed(1));
 
     if (!isTiff) {
-      setUploadError('Only georeferenced GeoTIFF (.tif or .tiff) orthomosaics can be uploaded.');
+      setUploadError('This file is not a valid GIS raster. Select a georeferenced GeoTIFF (.tif, .tiff, or .geotiff) orthomosaic.');
       setPreviewLoading(false);
       return;
     }
@@ -318,7 +321,7 @@ export const DroneUploadPage: React.FC = () => {
             <input
               type="file"
               ref={fileInputRef}
-              accept=".tif,.tiff"
+              accept="image/*,.tif,.tiff,.geotiff,.jpg,.jpeg,.png,.webp"
               onChange={handleFileInputChange}
               className="hidden"
             />
@@ -329,7 +332,7 @@ export const DroneUploadPage: React.FC = () => {
 
             <h3 className="text-sm font-bold text-slate-900">Drag & Drop Georeferenced Drone GeoTIFF</h3>
             <p className="text-xs text-slate-500 mt-0.5 max-w-xs leading-tight">
-              Supported raster format: <strong className="text-slate-800">GeoTIFF (.tif, .tiff)</strong> with CRS metadata
+              Supported formats: <strong className="text-slate-800">GeoTIFF, TIFF, JPG, JPEG, PNG, and WebP</strong>
             </p>
 
             <div className="mt-4 flex items-center gap-2">

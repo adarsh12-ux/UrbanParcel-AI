@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { Search, MapPin, Download, BarChart3, SlidersHorizontal, Layers, Compass } from 'lucide-react';
+import { Search, MapPin, Download, BarChart3, SlidersHorizontal, AlertCircle } from 'lucide-react';
 import { Project, Parcel, Building, Road } from '../types';
 import { api } from '../services/api';
 import { GISMapView } from '../components/map/GISMapView';
@@ -18,8 +18,10 @@ export const GISMapPage: React.FC = () => {
   const [parcels, setParcels] = useState<Parcel[]>([]);
   const [buildings, setBuildings] = useState<Building[]>([]);
   const [roads, setRoads] = useState<Road[]>([]);
+  const [imagery, setImagery] = useState<{ url: string; bounds?: [[number, number], [number, number]] } | null>(null);
   const [selectedParcel, setSelectedParcel] = useState<Parcel | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchError, setSearchError] = useState<string | null>(null);
 
   const [basemap, setBasemap] = useState<'satellite' | 'streets' | 'dark'>('streets');
 
@@ -53,15 +55,17 @@ export const GISMapPage: React.FC = () => {
           return;
         }
         setProject(projData);
-        const [parcelsData, buildingsData, roadsData] = await Promise.all([
+        const [parcelsData, buildingsData, roadsData, imageryData] = await Promise.all([
           api.getParcels(id),
           api.getBuildings(id),
-          api.getRoads(id)
+          api.getRoads(id),
+          api.getImagery(id)
         ]);
 
         setParcels(parcelsData);
         setBuildings(buildingsData);
         setRoads(roadsData);
+        setImagery(imageryData);
 
         // Check URL query for parcel ID search
         const parcelSearch = searchParams.get('search');
@@ -90,11 +94,15 @@ export const GISMapPage: React.FC = () => {
 
   const handleSearchParcel = (e: React.FormEvent) => {
     e.preventDefault();
+    setSearchError(null);
     if (!searchQuery.trim()) return;
     const q = searchQuery.trim().toLowerCase();
     const match = parcels.find(p => p.id.toLowerCase().includes(q) || p.surveyNo.toLowerCase().includes(q));
     if (match) {
       setSelectedParcel(match);
+      setPanelOpen(true);
+    } else {
+      setSearchError(`No parcel matched "${searchQuery.trim()}".`);
     }
   };
   if (loading) {
@@ -111,7 +119,7 @@ export const GISMapPage: React.FC = () => {
   );
 }
 
-if (error) {
+if (error || !project) {
   return (
     <div className="flex-1 min-h-screen flex items-center justify-center bg-slate-100 p-6">
       <div className="max-w-md rounded-lg border border-red-200 bg-white p-6 text-center shadow-sm">
@@ -120,7 +128,7 @@ if (error) {
         </h2>
 
         <p className="mb-4 text-sm text-slate-600">
-          {error}
+          {error || 'Survey project data is unavailable.'}
         </p>
 
         <button
@@ -141,7 +149,7 @@ if (error) {
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-800">
             <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
             <span className="font-bold">GIS Spatial Workspace</span>
-            <span className="text-slate-500 font-mono text-[11px] hidden sm:inline">[{project?.name || 'Urban Zone A'}]</span>
+            <span className="text-slate-500 font-mono text-[11px] hidden sm:inline">[{project?.name}]</span>
           </div>
 
           <form onSubmit={handleSearchParcel} className="relative hidden md:block">
@@ -154,6 +162,7 @@ if (error) {
               className="bg-slate-50 border border-slate-200 rounded pl-7.5 pr-3 py-1 text-xs text-slate-900 placeholder:text-slate-400 font-mono focus:bg-white focus:outline-none focus:border-teal-700 focus:ring-1 focus:ring-teal-700 transition-colors"
             />
           </form>
+          {searchError && <span className="hidden lg:inline text-[10px] text-rose-700">{searchError}</span>}
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2 text-xs">
@@ -206,6 +215,10 @@ if (error) {
 
       {/* Main Map Container */}
       <div className="flex-1 relative w-full h-full">
+        <div className="absolute top-2 left-1/2 z-10 -translate-x-1/2 rounded bg-white/95 px-3 py-1.5 text-[11px] text-slate-600 shadow-sm">
+          {project.location} · {project.surveyAreaSqKm} km² survey area
+        </div>
+
         {/* Leaflet Map */}
         <GISMapView
           parcels={parcels}
@@ -218,8 +231,20 @@ if (error) {
           }}
           layersState={layersState}
           basemap={basemap}
-          center={project?.centerCoordinates || [16.5062, 80.6480]}
+          center={project.centerCoordinates}
+          showImagery={layersState.droneImagery}
+          imageryUrl={imagery?.url}
+          imageryBounds={imagery?.bounds}
         />
+
+        {parcels.length === 0 && (
+          <div className="absolute inset-0 z-[5] flex items-center justify-center pointer-events-none p-4">
+            <div className="rounded border border-slate-200 bg-white/95 px-4 py-3 text-center text-xs text-slate-600 shadow-md">
+              <AlertCircle className="mx-auto mb-1 h-4 w-4 text-amber-600" />
+              No parcel boundary data is available for this project.
+            </div>
+          </div>
+        )}
 
         {/* Floating Layer Control Panel Left */}
         {layerControlOpen && (
@@ -229,10 +254,21 @@ if (error) {
               onToggleLayer={handleToggleLayer}
               basemap={basemap}
               onSelectBasemap={setBasemap}
+              counts={{ parcels: parcels.length, buildings: buildings.length, roads: roads.length }}
               onClose={() => setLayerControlOpen(false)}
             />
           </div>
         )}
+
+        <div className="absolute bottom-3 left-3 z-10 rounded border border-slate-200 bg-white/95 p-2.5 text-[10px] shadow-md">
+          <p className="mb-1 font-semibold uppercase tracking-wider text-slate-500">Map Legend</p>
+          <div className="space-y-1 text-slate-700">
+            <div className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-slate-700" />Persisted parcel geometry</div>
+            <div className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-amber-600" />Persisted building geometry</div>
+            <div className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-emerald-600" />Persisted road geometry</div>
+            <div className="mt-1 border-t border-slate-100 pt-1 text-slate-500">Source and review status are stored per feature.</div>
+          </div>
+        </div>
 
         {/* Selected Parcel Details Panel Right */}
         {panelOpen && selectedParcel && (
@@ -251,26 +287,25 @@ if (error) {
         <div className="flex items-center gap-3 sm:gap-5 overflow-x-auto">
           <div className="flex items-center gap-1 shrink-0">
             <span className="text-slate-400 font-sans text-[11px]">Parcels:</span>
-            <span className="font-bold text-slate-900">{parcels.length || 247}</span>
+            <span className="font-bold text-slate-900">{parcels.length}</span>
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <span className="text-slate-400 font-sans text-[11px]">Buildings:</span>
-            <span className="font-bold text-amber-700">{buildings.length || 381}</span>
+            <span className="font-bold text-amber-700">{buildings.length}</span>
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <span className="text-slate-400 font-sans text-[11px]">Roads:</span>
-            <span className="font-bold text-teal-700">{roads.length || 42}</span>
+            <span className="font-bold text-teal-700">{roads.length}</span>
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <span className="text-slate-400 font-sans text-[11px]">Survey Area:</span>
-            <span className="font-bold text-slate-900">{project?.surveyAreaSqKm || 4.2} km²</span>
+            <span className="font-bold text-slate-900">{project.surveyAreaSqKm} km²</span>
           </div>
         </div>
 
         <div className="hidden md:flex items-center gap-4 text-[10px] text-slate-500 font-mono">
           <span>Scale 1:1,000</span>
-          <span>CRS: EPSG:4326</span>
-          <span className="text-emerald-700 font-semibold">AI Confidence: 94.7%</span>
+          <span>CRS: {project.crs}</span>
         </div>
       </div>
     </div>

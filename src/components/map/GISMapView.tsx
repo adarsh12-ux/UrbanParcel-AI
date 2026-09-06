@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { MapContainer, TileLayer, Polygon, Polyline, Tooltip, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, ImageOverlay, Polygon, Polyline, Tooltip, useMap } from 'react-leaflet';
+import { LocateFixed, Maximize, Minus, Plus } from 'lucide-react';
 import { Parcel, Building, Road } from '../../types';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -30,6 +31,9 @@ interface GISMapViewProps {
   };
   basemap: 'satellite' | 'streets' | 'dark';
   center: [number, number];
+  showImagery: boolean;
+  imageryUrl?: string;
+  imageryBounds?: [[number, number], [number, number]];
 }
 
 // Controller component to invalidate map size & fly to selected parcel
@@ -51,6 +55,61 @@ const MapController: React.FC<{ center: [number, number]; zoom?: number }> = ({ 
   return null;
 };
 
+const MapControls: React.FC<{ center: [number, number]; parcels: Parcel[] }> = ({ center, parcels }) => {
+  const map = useMap();
+
+  const fitAllParcels = () => {
+    const points = parcels.flatMap(parcel =>
+      parcel.geometry.coordinates[0].map(([lng, lat]) => [lat, lng] as [number, number])
+    );
+    if (points.length > 0) {
+      map.fitBounds(L.latLngBounds(points), { padding: [24, 24], maxZoom: 17 });
+    }
+  };
+
+  return (
+    <div className="absolute top-3 right-3 z-[400] flex flex-col gap-1 rounded bg-white p-1 shadow-md">
+      <button
+        type="button"
+        onClick={() => map.zoomIn()}
+        title="Zoom in"
+        aria-label="Zoom in"
+        className="rounded p-1.5 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+      >
+        <Plus className="h-4 w-4" />
+      </button>
+      <button
+        type="button"
+        onClick={() => map.zoomOut()}
+        title="Zoom out"
+        aria-label="Zoom out"
+        className="rounded p-1.5 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+      >
+        <Minus className="h-4 w-4" />
+      </button>
+      <button
+        type="button"
+        onClick={() => map.flyTo(center, 16, { duration: 0.6 })}
+        title="Reset project view"
+        aria-label="Reset project view"
+        className="rounded p-1.5 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+      >
+        <LocateFixed className="h-4 w-4" />
+      </button>
+      <button
+        type="button"
+        onClick={fitAllParcels}
+        disabled={parcels.length === 0}
+        title="Fit all parcels"
+        aria-label="Fit all parcels"
+        className="rounded p-1.5 text-slate-600 hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300"
+      >
+        <Maximize className="h-4 w-4" />
+      </button>
+    </div>
+  );
+};
+
 export const GISMapView: React.FC<GISMapViewProps> = ({
   parcels,
   buildings,
@@ -59,7 +118,10 @@ export const GISMapView: React.FC<GISMapViewProps> = ({
   onSelectParcel,
   layersState,
   basemap,
-  center
+  center,
+  showImagery,
+  imageryUrl,
+  imageryBounds
 }) => {
   // Tile URL Map with OpenStreetMap as primary reliable provider
   const tileUrls = {
@@ -99,7 +161,7 @@ export const GISMapView: React.FC<GISMapViewProps> = ({
     }
   };
 
-  const safeCenter: [number, number] = center && center[0] && center[1] ? center : [16.5062, 80.6480];
+  const safeCenter: [number, number] = center;
 
   return (
     <div className="w-full h-full min-h-[400px] relative z-0">
@@ -110,14 +172,20 @@ export const GISMapView: React.FC<GISMapViewProps> = ({
         className="w-full h-full min-h-[400px] overflow-hidden z-0"
         zoomControl={true}
       >
-        <TileLayer
-          key={basemap}
-          url={tileUrls[basemap] || tileUrls.streets}
-          attribution={tileAttributions[basemap] || tileAttributions.streets}
-          maxZoom={19}
-        />
+        {showImagery && (
+          <TileLayer
+            key={basemap}
+            url={tileUrls[basemap] || tileUrls.streets}
+            attribution={tileAttributions[basemap] || tileAttributions.streets}
+            maxZoom={19}
+          />
+        )}
+        {showImagery && imageryUrl && imageryBounds && (
+          <ImageOverlay url={imageryUrl} bounds={imageryBounds} opacity={0.65} zIndex={1} />
+        )}
 
         <MapController center={selectedParcel ? selectedParcel.center : safeCenter} />
+        <MapControls center={safeCenter} parcels={parcels} />
 
         {/* Parcels Layer */}
         {layersState.parcels && parcels.map((parcel) => {

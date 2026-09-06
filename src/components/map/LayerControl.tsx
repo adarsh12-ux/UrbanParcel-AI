@@ -16,6 +16,7 @@ interface LayerControlProps {
   onToggleLayer: (layerKey: keyof MapLayersState) => void;
   basemap: 'satellite' | 'streets' | 'dark';
   onSelectBasemap: (basemap: 'satellite' | 'streets' | 'dark') => void;
+  counts: Partial<Record<keyof MapLayersState, number>>;
   onClose?: () => void;
 }
 
@@ -24,16 +25,17 @@ export const LayerControl: React.FC<LayerControlProps> = ({
   onToggleLayer,
   basemap,
   onSelectBasemap,
+  counts,
   onClose
 }) => {
-  const layerItems: { key: keyof MapLayersState; label: string; color: string; count?: string }[] = [
-    { key: 'droneImagery', label: 'UAV Orthomosaic Imagery', color: 'bg-teal-700', count: 'GeoTIFF' },
-    { key: 'parcels', label: 'Cadastral Boundaries', color: 'bg-slate-700', count: '247' },
-    { key: 'buildings', label: 'Building Footprints', color: 'bg-amber-600', count: '381' },
-    { key: 'roads', label: 'Road Centerlines', color: 'bg-emerald-600', count: '42' },
-    { key: 'waterBodies', label: 'Water Channels', color: 'bg-sky-600', count: '12' },
-    { key: 'vegetation', label: 'Green Canopy / Cover', color: 'bg-green-600', count: 'Vector' },
-    { key: 'cadastralData', label: 'Reference Survey Grid', color: 'bg-slate-400', count: 'Grid' }
+  const layerItems: { key: keyof MapLayersState; label: string; color: string }[] = [
+    { key: 'droneImagery', label: 'UAV Orthomosaic Imagery', color: 'bg-teal-700' },
+    { key: 'parcels', label: 'Cadastral Boundaries', color: 'bg-slate-700' },
+    { key: 'buildings', label: 'Building Footprints', color: 'bg-amber-600' },
+    { key: 'roads', label: 'Road Centerlines', color: 'bg-emerald-600' },
+    { key: 'waterBodies', label: 'Water Channels', color: 'bg-sky-600' },
+    { key: 'vegetation', label: 'Green Canopy / Cover', color: 'bg-green-600' },
+    { key: 'cadastralData', label: 'Reference Survey Grid', color: 'bg-slate-400' }
   ];
 
   return (
@@ -76,7 +78,7 @@ export const LayerControl: React.FC<LayerControlProps> = ({
       <div className="space-y-1.5">
         <div className="flex items-center justify-between font-semibold text-slate-800">
           <span className="uppercase tracking-wider text-[10px] text-slate-500 font-mono">Vector Layers</span>
-          <span className="text-[10px] text-slate-400 font-mono">4 Active</span>
+          <span className="text-[10px] text-slate-400 font-mono">{Object.values(layers).filter(Boolean).length} Active</span>
         </div>
 
         <div className="space-y-0.5">
@@ -98,9 +100,9 @@ export const LayerControl: React.FC<LayerControlProps> = ({
                 </div>
 
                 <div className="flex items-center gap-1.5">
-                  {item.count && (
+                  {counts[item.key] !== undefined && (
                     <span className="text-[9px] font-mono bg-white text-slate-500 px-1 py-0.2 rounded border border-slate-200">
-                      {item.count}
+                      {counts[item.key]}
                     </span>
                   )}
                   {isChecked ? (

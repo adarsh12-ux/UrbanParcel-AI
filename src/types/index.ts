@@ -1,6 +1,6 @@
 export * from './auth';
 
-export type ProjectStatus = 'Draft' | 'Processing' | 'Completed' | 'Failed';
+export type ProjectStatus = 'Draft' | 'Uploaded' | 'Validating' | 'Processing' | 'Extracting Features' | 'Generating GIS Layers' | 'Completed' | 'Failed';
 
 export interface Project {
   id: string;
@@ -19,12 +19,16 @@ export interface Project {
   gsdCmPerPx?: number;
   imageryFileName?: string;
   imageryFileSizeMb?: number;
+  imageryPath?: string;
+  imageryMimeType?: string;
+  imageryChecksum?: string;
 }
 
 export type LandUseType = 'Residential' | 'Commercial' | 'Industrial' | 'Agricultural' | 'Mixed' | 'Government' | 'Vacant';
 
 export interface Parcel {
   id: string; // e.g. "UP-1001"
+  projectId?: string;
   surveyNo: string;
   areaSqM: number;
   perimeterM: number;
@@ -39,6 +43,8 @@ export interface Parcel {
   };
   ownerName: string;
   status: 'Verified' | 'Flagged' | 'Pending Review';
+  source?: 'ai_extracted' | 'official_cadastral' | 'manual_edit' | 'verified';
+  reviewStatus?: 'needs_review' | 'verified' | 'rejected';
   notes?: string;
 }
 
@@ -93,6 +99,24 @@ export interface ProcessingState {
   logs: string[];
   startTime?: string;
   estimatedTimeRemaining?: string;
+}
+
+export type ProcessingJobStatus = 'uploaded' | 'validating' | 'processing' | 'extracting features' | 'generating GIS layers' | 'completed' | 'failed';
+
+export interface ProcessingJob {
+  id: string;
+  projectId: string;
+  imageryId: string;
+  status: ProcessingJobStatus;
+  progress: number;
+  currentStep?: string;
+  steps: PipelineStep[];
+  logs: string[];
+  errorMessage?: string;
+  workerJobId?: string;
+  createdAt: string;
+  updatedAt: string;
+  completedAt?: string;
 }
 
 export interface GroundTruthComparison {

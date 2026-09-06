@@ -14,116 +14,10 @@ interface FileMetadata {
   gps: string;
   crs: string;
   fileType?: string;
-}
-
-// Generate realistic cadastral drone orthomosaic sample graphic
-function generateSampleOrthomosaicPreview(): string {
-  const canvas = document.createElement('canvas');
-  canvas.width = 640;
-  canvas.height = 360;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return '';
-
-  // Background aerial terrain base (vegetation & earth tones)
-  const bgGrad = ctx.createLinearGradient(0, 0, 640, 360);
-  bgGrad.addColorStop(0, '#334125');
-  bgGrad.addColorStop(0.3, '#3e4a2c');
-  bgGrad.addColorStop(0.7, '#485734');
-  bgGrad.addColorStop(1, '#2f3b20');
-  ctx.fillStyle = bgGrad;
-  ctx.fillRect(0, 0, 640, 360);
-
-  // Field / parcel texture patterns
-  ctx.fillStyle = '#4f5e38';
-  ctx.fillRect(40, 30, 220, 140);
-  ctx.fillStyle = '#3a4727';
-  ctx.fillRect(280, 25, 320, 150);
-  ctx.fillStyle = '#42502c';
-  ctx.fillRect(50, 190, 240, 140);
-  ctx.fillStyle = '#374323';
-  ctx.fillRect(310, 195, 290, 135);
-
-  // Asphalt roads & intersections
-  ctx.strokeStyle = '#272f3d';
-  ctx.lineWidth = 14;
-  ctx.beginPath();
-  ctx.moveTo(0, 180);
-  ctx.lineTo(640, 180);
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.moveTo(270, 0);
-  ctx.lineTo(270, 360);
-  ctx.stroke();
-
-  // Road markings
-  ctx.strokeStyle = '#f8fafc';
-  ctx.lineWidth = 1.5;
-  ctx.setLineDash([8, 8]);
-  ctx.beginPath();
-  ctx.moveTo(0, 180);
-  ctx.lineTo(640, 180);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(270, 0);
-  ctx.lineTo(270, 360);
-  ctx.stroke();
-  ctx.setLineDash([]);
-
-  // Building roof structures (orange/red/grey tiles)
-  const buildings = [
-    { x: 70, y: 50, w: 45, h: 32, fill: '#b45309' },
-    { x: 135, y: 60, w: 55, h: 40, fill: '#9a3412' },
-    { x: 75, y: 105, w: 48, h: 35, fill: '#64748b' },
-    { x: 145, y: 115, w: 42, h: 30, fill: '#c2410c' },
-    { x: 310, y: 45, w: 60, h: 42, fill: '#b45309' },
-    { x: 395, y: 55, w: 50, h: 38, fill: '#475569' },
-    { x: 470, y: 65, w: 65, h: 45, fill: '#9a3412' },
-    { x: 320, y: 110, w: 48, h: 35, fill: '#78350f' },
-    { x: 410, y: 115, w: 58, h: 40, fill: '#b45309' },
-    { x: 80, y: 220, w: 52, h: 38, fill: '#9a3412' },
-    { x: 155, y: 225, w: 60, h: 45, fill: '#475569' },
-    { x: 90, y: 275, w: 46, h: 34, fill: '#b45309' },
-    { x: 165, y: 285, w: 54, h: 36, fill: '#78350f' },
-    { x: 340, y: 230, w: 65, h: 42, fill: '#b45309' },
-    { x: 430, y: 235, w: 52, h: 38, fill: '#64748b' },
-    { x: 505, y: 240, w: 58, h: 44, fill: '#9a3412' },
-    { x: 360, y: 285, w: 50, h: 35, fill: '#78350f' },
-    { x: 440, y: 285, w: 62, h: 40, fill: '#b45309' },
-  ];
-
-  buildings.forEach(b => {
-    // shadow
-    ctx.fillStyle = 'rgba(0,0,0,0.35)';
-    ctx.fillRect(b.x + 3, b.y + 3, b.w, b.h);
-    // roof
-    ctx.fillStyle = b.fill;
-    ctx.fillRect(b.x, b.y, b.w, b.h);
-    // ridge line
-    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(b.x, b.y + b.h / 2);
-    ctx.lineTo(b.x + b.w, b.y + b.h / 2);
-    ctx.stroke();
-  });
-
-  // Cadastral boundary vector overlay (teal)
-  ctx.strokeStyle = '#0d9488';
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(30, 20, 230, 150);
-  ctx.strokeRect(280, 20, 330, 150);
-  ctx.strokeRect(40, 190, 220, 150);
-  ctx.strokeRect(280, 190, 330, 150);
-
-  // Overlay HUD telemetry bar
-  ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
-  ctx.fillRect(0, 0, 640, 24);
-  ctx.fillStyle = '#f8fafc';
-  ctx.font = '10px monospace';
-  ctx.fillText('UAV SENSOR: RGB 4K • GSD: 3.2cm/px • ALT: 120m AGL • RTK FIX: 99.8%', 12, 16);
-
-  return canvas.toDataURL('image/jpeg', 0.9);
+  file?: File;
+  width?: number;
+  height?: number;
+  bounds?: [number, number, number, number];
 }
 
 export const DroneUploadPage: React.FC = () => {
@@ -137,10 +31,12 @@ export const DroneUploadPage: React.FC = () => {
   const [previewLoading, setPreviewLoading] = useState<boolean>(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
 
   // Track blob URLs to properly revoke on unmount or file replacement
   const currentBlobUrlRef = useRef<string | null>(null);
+  const selectedUploadRef = useRef<File | null>(null);
 
   const clearBlobUrl = useCallback(() => {
     if (currentBlobUrlRef.current && currentBlobUrlRef.current.startsWith('blob:')) {
@@ -157,53 +53,56 @@ export const DroneUploadPage: React.FC = () => {
 
   useEffect(() => {
     async function loadProject() {
-      if (id) {
+      if (!id) {
+        setUploadError('No survey project was selected.');
+        return;
+      }
+      try {
         const proj = await api.getProject(id);
+        if (!proj) {
+          setUploadError('Survey project was not found.');
+          return;
+        }
         setProject(proj);
-        if (proj?.imageryFileName) {
-          const sampleDataUrl = generateSampleOrthomosaicPreview();
-          setPreviewUrl(sampleDataUrl);
+        if (proj.imageryFileName) {
           setSelectedFile({
             name: proj.imageryFileName,
-            sizeMb: proj.imageryFileSizeMb || 428.5,
-            dimensions: '5472 × 3648 px',
-            gsd: '3.2 cm/pixel',
-            coverage: `${proj.surveyAreaSqKm || 4.2} km²`,
-            gps: 'Available (RTK High Precision)',
-            crs: proj.crs || 'EPSG:4326 (WGS 84)',
+            sizeMb: proj.imageryFileSizeMb || 0,
+            dimensions: 'Stored raster metadata',
+            gsd: proj.gsdCmPerPx ? `${proj.gsdCmPerPx} cm/pixel` : 'Not provided',
+            coverage: `${proj.surveyAreaSqKm} km²`,
+            gps: 'Stored upload metadata',
+            crs: proj.crs || 'GeoTIFF CRS',
             fileType: 'GeoTIFF'
           });
         }
+      } catch (err: any) {
+        setUploadError(err?.message || 'Unable to load the survey project.');
       }
     }
     loadProject();
   }, [id]);
 
-  const handleSampleFileClick = useCallback(() => {
-    clearBlobUrl();
-    setPreviewError(null);
-    setPreviewLoading(false);
-    const sampleDataUrl = generateSampleOrthomosaicPreview();
-    setPreviewUrl(sampleDataUrl);
-    setSelectedFile({
-      name: project?.imageryFileName || 'Vijayawada_Zone01_Orthomosaic.tif',
-      sizeMb: project?.imageryFileSizeMb || 428.5,
-      dimensions: '5472 × 3648 px',
-      gsd: '3.2 cm/pixel',
-      coverage: `${project?.surveyAreaSqKm || 4.2} km²`,
-      gps: 'Available (RTK High Precision)',
-      crs: project?.crs || 'EPSG:4326 (WGS 84)',
-      fileType: 'GeoTIFF'
-    });
-  }, [clearBlobUrl, project]);
-
   const processFile = useCallback(async (file: File) => {
     clearBlobUrl();
     setPreviewError(null);
+    setUploadError(null);
     setPreviewLoading(true);
+    selectedUploadRef.current = null;
 
     const isTiff = file.name.toLowerCase().endsWith('.tif') || file.name.toLowerCase().endsWith('.tiff');
     const sizeMb = parseFloat((file.size / (1024 * 1024)).toFixed(1));
+
+    if (!isTiff) {
+      setUploadError('Only georeferenced GeoTIFF (.tif or .tiff) orthomosaics can be uploaded.');
+      setPreviewLoading(false);
+      return;
+    }
+    if (file.size === 0 || file.size > 5 * 1024 * 1024 * 1024) {
+      setUploadError('The GeoTIFF must be larger than 0 bytes and no larger than 5 GB.');
+      setPreviewLoading(false);
+      return;
+    }
 
     if (isTiff) {
       try {
@@ -211,6 +110,16 @@ export const DroneUploadPage: React.FC = () => {
         const image = await tiff.getImage();
         const rawWidth = image.getWidth();
         const rawHeight = image.getHeight();
+        if (!rawWidth || !rawHeight) throw new Error('The raster has invalid dimensions.');
+
+        const geoKeys = image.getGeoKeys?.();
+        if (!geoKeys?.ProjectedCSTypeGeoKey && !geoKeys?.GeographicTypeGeoKey) {
+          throw new Error('The GeoTIFF does not contain a CRS GeoKey.');
+        }
+        const rawBounds = image.getBoundingBox?.();
+        const bounds = rawBounds && rawBounds.length === 4 && rawBounds.every(Number.isFinite)
+          ? rawBounds as [number, number, number, number]
+          : undefined;
 
         // Calculate thumbnail bounding dimensions (max 800px)
         const maxDim = 800;
@@ -279,9 +188,8 @@ export const DroneUploadPage: React.FC = () => {
         }
 
         // Inspect GeoKeys for CRS if available
-        let crs = project?.crs || 'EPSG:4326 (WGS 84)';
+        let crs = project?.crs || 'GeoTIFF CRS';
         try {
-          const geoKeys = image.getGeoKeys?.();
           if (geoKeys?.ProjectedCSTypeGeoKey) {
             crs = `EPSG:${geoKeys.ProjectedCSTypeGeoKey} (UTM/State Grid)`;
           } else if (geoKeys?.GeographicTypeGeoKey) {
@@ -291,7 +199,7 @@ export const DroneUploadPage: React.FC = () => {
           // Ignore GeoKey extraction issues
         }
 
-        let gsdStr = '3.2 cm/pixel';
+        let gsdStr = 'Not provided';
         try {
           const res = image.getResolution();
           if (res && res[0]) {
@@ -306,67 +214,26 @@ export const DroneUploadPage: React.FC = () => {
 
         setSelectedFile({
           name: file.name,
-          sizeMb: sizeMb > 0 ? sizeMb : 42.8,
+          sizeMb,
           dimensions: `${rawWidth} × ${rawHeight} px`,
           gsd: gsdStr,
-          coverage: `${project?.surveyAreaSqKm || 4.2} km²`,
+          coverage: `${project?.surveyAreaSqKm || 0} km² project area`,
           gps: 'GeoTIFF Embedded Metadata (RTK)',
           crs: crs,
-          fileType: 'GeoTIFF Raster'
+          fileType: 'GeoTIFF Raster',
+          file,
+          width: rawWidth,
+          height: rawHeight,
+          bounds
         });
+        selectedUploadRef.current = file;
       } catch (err) {
         console.error('Failed to parse GeoTIFF preview:', err);
-        const fallbackUrl = generateSampleOrthomosaicPreview();
-        setPreviewUrl(fallbackUrl);
-        setPreviewError('Decoded GeoTIFF metadata successfully. Full resolution ready for segmentation.');
-        setSelectedFile({
-          name: file.name,
-          sizeMb: sizeMb > 0 ? sizeMb : 42.8,
-          dimensions: '5472 × 3648 px',
-          gsd: '3.2 cm/pixel',
-          coverage: `${project?.surveyAreaSqKm || 4.2} km²`,
-          gps: 'Available (RTK High Precision)',
-          crs: project?.crs || 'EPSG:4326 (WGS 84)',
-          fileType: 'GeoTIFF'
-        });
+        setUploadError(err instanceof Error ? err.message : 'The GeoTIFF could not be validated.');
+        setSelectedFile(null);
       } finally {
         setPreviewLoading(false);
       }
-    } else {
-      // Standard raster images: JPG, JPEG, PNG, WEBP
-      const objectUrl = URL.createObjectURL(file);
-      currentBlobUrlRef.current = objectUrl;
-      setPreviewUrl(objectUrl);
-
-      const img = new Image();
-      img.onload = () => {
-        const fileExt = file.name.split('.').pop()?.toUpperCase() || 'IMAGE';
-        setSelectedFile({
-          name: file.name,
-          sizeMb: sizeMb > 0 ? sizeMb : 12.4,
-          dimensions: `${img.naturalWidth} × ${img.naturalHeight} px`,
-          gsd: '3.2 cm/pixel',
-          coverage: `${project?.surveyAreaSqKm || 4.2} km²`,
-          gps: 'Available (Exif / Geo-tagged)',
-          crs: project?.crs || 'EPSG:4326 (WGS 84)',
-          fileType: `${fileExt} Raster`
-        });
-        setPreviewLoading(false);
-      };
-      img.onerror = () => {
-        setSelectedFile({
-          name: file.name,
-          sizeMb: sizeMb > 0 ? sizeMb : 12.4,
-          dimensions: '5472 × 3648 px',
-          gsd: '3.2 cm/pixel',
-          coverage: `${project?.surveyAreaSqKm || 4.2} km²`,
-          gps: 'Available (Exif / Geo-tagged)',
-          crs: project?.crs || 'EPSG:4326 (WGS 84)',
-          fileType: 'IMAGE'
-        });
-        setPreviewLoading(false);
-      };
-      img.src = objectUrl;
     }
   }, [clearBlobUrl, project]);
 
@@ -381,18 +248,35 @@ export const DroneUploadPage: React.FC = () => {
     setSelectedFile(null);
     setPreviewUrl(null);
     setPreviewError(null);
+    setUploadError(null);
+    selectedUploadRef.current = null;
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
   const handleStartAnalysis = async () => {
-    if (!id) return;
-    setLoading(true);
-    if (selectedFile) {
-      await api.uploadImagery(id, selectedFile.name, selectedFile.sizeMb);
+    if (!id || !selectedFile?.file || !selectedFile.width || !selectedFile.height) {
+      setUploadError('Select and validate a GeoTIFF before starting processing.');
+      return;
     }
-    navigate(`/projects/${id}/processing`);
+    setLoading(true);
+    setUploadError(null);
+    try {
+      const { imageryId } = await api.uploadImagery(id, selectedFile.file, {
+        crs: selectedFile.crs,
+        width: selectedFile.width,
+        height: selectedFile.height,
+        bounds: selectedFile.bounds
+      });
+      const job = await api.createProcessingJob(id, imageryId);
+      await api.triggerProcessing(job);
+      navigate(`/projects/${id}/processing?job=${job.id}`);
+    } catch (err: any) {
+      setUploadError(err?.message || 'Upload failed. No processing job was created.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -422,8 +306,6 @@ export const DroneUploadPage: React.FC = () => {
               setDragActive(false);
               if (e.dataTransfer.files && e.dataTransfer.files[0]) {
                 processFile(e.dataTransfer.files[0]);
-              } else {
-                handleSampleFileClick();
               }
             }}
             className={`border-2 border-dashed rounded p-6 text-center flex flex-col items-center justify-center min-h-[280px] transition-colors ${
@@ -436,7 +318,7 @@ export const DroneUploadPage: React.FC = () => {
             <input
               type="file"
               ref={fileInputRef}
-              accept=".tif,.tiff,.jpg,.jpeg,.png,.webp"
+              accept=".tif,.tiff"
               onChange={handleFileInputChange}
               className="hidden"
             />
@@ -445,9 +327,9 @@ export const DroneUploadPage: React.FC = () => {
               <Upload className="w-6 h-6 text-teal-700" />
             </div>
 
-            <h3 className="text-sm font-bold text-slate-900">Drag & Drop Drone GeoTIFF or Image</h3>
+            <h3 className="text-sm font-bold text-slate-900">Drag & Drop Georeferenced Drone GeoTIFF</h3>
             <p className="text-xs text-slate-500 mt-0.5 max-w-xs leading-tight">
-              Supported raster formats: <strong className="text-slate-800">GeoTIFF (.tif, .tiff)</strong>, JPG, JPEG, PNG, WEBP
+              Supported raster format: <strong className="text-slate-800">GeoTIFF (.tif, .tiff)</strong> with CRS metadata
             </p>
 
             <div className="mt-4 flex items-center gap-2">
@@ -462,18 +344,10 @@ export const DroneUploadPage: React.FC = () => {
                 Browse Files
               </button>
 
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleSampleFileClick();
-                }}
-                className="px-3 py-1.5 rounded bg-white hover:bg-slate-50 text-slate-700 font-medium text-xs border border-slate-200 transition-colors cursor-pointer"
-              >
-                Use Sample Orthomosaic
-              </button>
             </div>
           </div>
+
+          {uploadError && <div className="p-3 bg-rose-50 border border-rose-200 rounded text-xs text-rose-800">{uploadError}</div>}
 
           <div className="p-3 bg-slate-50 border border-slate-200 rounded text-xs text-slate-700 space-y-0.5">
             <div className="flex items-center gap-1.5 font-medium text-slate-900">
@@ -586,7 +460,7 @@ export const DroneUploadPage: React.FC = () => {
                 <Upload className="w-7 h-7 mx-auto text-slate-300" />
                 <p className="font-medium text-slate-700">No drone imagery ingested yet.</p>
                 <p className="text-[11px] text-slate-400">
-                  Select a GeoTIFF or image via <strong className="text-slate-700 font-semibold">Browse Files</strong> or click <strong className="text-slate-700 font-semibold">Use Sample Orthomosaic</strong>.
+                  Select a georeferenced GeoTIFF via <strong className="text-slate-700 font-semibold">Browse Files</strong>.
                 </p>
               </div>
             )}

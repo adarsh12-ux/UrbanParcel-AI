@@ -29,6 +29,7 @@ export const DashboardPage: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeStep, setActiveStep] = useState('01');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -240,34 +241,39 @@ export const DashboardPage: React.FC = () => {
 
         <div className="flex flex-wrap gap-2 xl:flex-nowrap xl:gap-0" aria-label="Cadastral feature extraction workflow">
           {[
-            { step: '01', title: 'Upload Drone Imagery', description: 'Submit orthomosaic source', icon: Upload, active: true },
-            { step: '02', title: 'Validate GeoTIFF', description: 'Check format and projection', icon: FileCheck, active: false },
-            { step: '03', title: 'Extract Spatial Metadata', description: 'Read CRS and coverage', icon: Database, active: false },
-            { step: '04', title: 'AI Feature Extraction', description: 'Identify mapped features', icon: BrainCircuit, active: false },
-            { step: '05', title: 'Generate Parcel Boundaries', description: 'Build cadastral polygons', icon: Map, active: false },
-            { step: '06', title: 'Review and Verify Data', description: 'Confirm geometry and attributes', icon: ClipboardCheck, active: false },
-            { step: '07', title: 'Store in PostGIS', description: 'Persist authoritative layers', icon: Server, active: false },
-            { step: '08', title: 'Export Cadastral Reports', description: 'Prepare official outputs', icon: FileOutput, active: false }
+            { step: '01', title: 'Upload Drone Imagery', description: 'Submit orthomosaic source', icon: Upload },
+            { step: '02', title: 'Validate GeoTIFF', description: 'Check format and projection', icon: FileCheck },
+            { step: '03', title: 'Extract Spatial Metadata', description: 'Read CRS and coverage', icon: Database },
+            { step: '04', title: 'AI Feature Extraction', description: 'Identify mapped features', icon: BrainCircuit },
+            { step: '05', title: 'Generate Parcel Boundaries', description: 'Build cadastral polygons', icon: Map },
+            { step: '06', title: 'Review and Verify Data', description: 'Confirm geometry and attributes', icon: ClipboardCheck },
+            { step: '07', title: 'Store in PostGIS', description: 'Persist authoritative layers', icon: Server },
+            { step: '08', title: 'Export Cadastral Reports', description: 'Prepare official outputs', icon: FileOutput }
           ].map((item, index, items) => {
             const Icon = item.icon;
+            const isActive = item.step === activeStep;
             return (
               <div key={item.step} className="flex min-w-[calc(50%-0.25rem)] items-stretch sm:min-w-[calc(25%-0.375rem)] xl:min-w-0 xl:flex-1">
-                <div className={`flex min-h-[112px] w-full flex-col rounded border p-2.5 ${
-                  item.active
+                <button
+                  type="button"
+                  onClick={() => setActiveStep(item.step)}
+                  aria-pressed={isActive}
+                  className={`flex min-h-[112px] w-full cursor-pointer flex-col rounded border p-2.5 text-left ${
+                  isActive
                     ? 'border-teal-200 bg-teal-50/80 text-teal-950'
                     : 'border-slate-200 bg-slate-50 text-slate-700'
                 }`}>
                   <div className="flex items-center gap-1.5">
                     <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded font-mono text-[9px] font-bold ${
-                      item.active ? 'bg-teal-700 text-white' : 'border border-slate-200 bg-white text-slate-500'
+                      isActive ? 'bg-teal-700 text-white' : 'border border-slate-200 bg-white text-slate-500'
                     }`}>
                       {item.step}
                     </span>
-                    <Icon className={`h-3.5 w-3.5 shrink-0 ${item.active ? 'text-teal-700' : 'text-slate-500'}`} aria-hidden="true" />
+                    <Icon className={`h-3.5 w-3.5 shrink-0 ${isActive ? 'text-teal-700' : 'text-slate-500'}`} aria-hidden="true" />
                   </div>
                   <p className="mt-2 text-[11px] font-semibold leading-tight">{item.title}</p>
                   <p className="mt-1 text-[10px] leading-tight text-slate-500">{item.description}</p>
-                </div>
+                </button>
                 {index < items.length - 1 && (
                   <ArrowRight className="mx-1 hidden w-3 shrink-0 self-center text-slate-300 xl:block" aria-hidden="true" />
                 )}

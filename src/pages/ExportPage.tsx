@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Download, FileJson, FileSpreadsheet, FileCode, Archive, Image, FileText, Compass, AlertCircle } from 'lucide-react';
-import { Project, Parcel } from '../types';
+import { Project, Parcel, Building, Road } from '../types';
 import { api } from '../services/api';
 import { Toast, ToastMessage } from '../components/common/Toast';
 
@@ -11,6 +11,8 @@ export const ExportPage: React.FC = () => {
 
   const [project, setProject] = useState<Project | null>(null);
   const [parcels, setParcels] = useState<Parcel[]>([]);
+  const [buildings, setBuildings] = useState<Building[]>([]);
+  const [roads, setRoads] = useState<Road[]>([]);
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,13 +37,20 @@ export const ExportPage: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const [projData, parcelData] = await Promise.all([api.getProject(id), api.getParcels(id)]);
+        const [projData, parcelData, buildingData, roadData] = await Promise.all([
+          api.getProject(id),
+          api.getParcels(id),
+          api.getBuildings(id),
+          api.getRoads(id)
+        ]);
         if (!projData) {
           setError(`Survey project "${id}" was not found.`);
           return;
         }
         setProject(projData);
         setParcels(parcelData);
+        setBuildings(buildingData);
+        setRoads(roadData);
       } catch (err: any) {
         console.error('Failed to load export data:', err);
         setError(err?.message || 'Unable to load export data.');
@@ -170,9 +179,9 @@ export const ExportPage: React.FC = () => {
 
           <div className="space-y-2 text-xs">
             {[
-              { key: 'parcels', label: 'Cadastral Boundaries', desc: '247 closed vector polygons' },
-              { key: 'buildings', label: 'Building Footprints', desc: '381 roofline polygons & heights' },
-              { key: 'roads', label: 'Road Network', desc: '42 centerline vector polylines' },
+              { key: 'parcels', label: 'Cadastral Boundaries', desc: `${parcels.length} persisted vector polygons` },
+              { key: 'buildings', label: 'Building Footprints', desc: `${buildings.length} persisted roofline polygons` },
+              { key: 'roads', label: 'Road Network', desc: `${roads.length} persisted centerline polylines` },
               { key: 'attributes', label: 'Attribute Registry', desc: 'Survey Nos, Land Use & Ownership' }
             ].map((item) => {
               const k = item.key as keyof typeof layersToExport;
@@ -289,22 +298,22 @@ export const ExportPage: React.FC = () => {
               <div className="grid grid-cols-3 gap-2 text-center font-mono">
                 <div className="p-2 bg-white border border-slate-200 rounded">
                   <p className="text-[10px] text-slate-400 uppercase font-sans">Survey Area</p>
-                  <p className="font-bold text-slate-900 mt-0.5">{project?.surveyAreaSqKm || 4.2} km²</p>
+                  <p className="font-bold text-slate-900 mt-0.5">{project?.surveyAreaSqKm} km²</p>
                 </div>
                 <div className="p-2 bg-white border border-slate-200 rounded">
                   <p className="text-[10px] text-slate-400 uppercase font-sans">Parcels Mapped</p>
-                  <p className="font-bold text-teal-800 mt-0.5">{parcels.length || 247}</p>
+                  <p className="font-bold text-teal-800 mt-0.5">{parcels.length}</p>
                 </div>
                 <div className="p-2 bg-white border border-slate-200 rounded">
                   <p className="text-[10px] text-slate-400 uppercase font-sans">Buildings Extracted</p>
-                  <p className="font-bold text-amber-700 mt-0.5">381</p>
+                  <p className="font-bold text-amber-700 mt-0.5">{buildings.length}</p>
                 </div>
               </div>
 
               <div className="space-y-1 text-slate-700 leading-relaxed">
                 <p className="font-semibold text-slate-900 text-xs">Executive Summary:</p>
                 <p className="text-[11px] text-slate-600">
-                  Automated high-resolution UAV orthomosaic boundary regularization completed with ResNet-50 + U-Net AI feature extraction pipeline. Mean boundary IoU achieved 88.4% with 94.7% confidence score across 247 urban parcel units in Vijayawada municipal zone.
+                  This report reflects the persisted spatial records for this project: {parcels.length} parcels, {buildings.length} buildings, and {roads.length} road segments. AI performance metrics are available on the analytics page after the processing worker writes them.
                 </p>
               </div>
             </div>

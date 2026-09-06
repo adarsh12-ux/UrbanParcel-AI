@@ -106,6 +106,23 @@ function mapProcessingJob(row: any): ProcessingJob {
   };
 }
 
+function mapAnalysis(row: any): AnalysisMetrics {
+  return {
+    precision: Number(row.precision),
+    recall: Number(row.recall),
+    f1Score: Number(row.f1_score),
+    meanIoU: Number(row.mean_iou),
+    totalParcelsDetected: Number(row.total_parcels_detected),
+    totalBuildingsDetected: Number(row.total_buildings_detected),
+    totalRoadSegments: Number(row.total_road_segments),
+    totalWaterBodies: Number(row.total_water_bodies),
+    landUseBreakdown: row.land_use_breakdown || [],
+    confidenceDistribution: row.confidence_distribution || [],
+    precisionRecallCurve: row.precision_recall_curve || [],
+    groundTruthComparisons: row.ground_truth_comparisons || []
+  };
+}
+
 function withTimeout<T>(promise: PromiseLike<T>, message: string, timeoutMs = 10000): Promise<T> {
   return new Promise((resolve, reject) => {
     const timeoutId = window.setTimeout(() => reject(new Error(message)), timeoutMs);
@@ -286,7 +303,7 @@ export const api = {
         crs: metadata.crs,
         width: metadata.width,
         height: metadata.height,
-        bounds: metadata.bounds,
+        metadata: { bounds: metadata.bounds },
         validation_status: 'valid',
         created_by: (await supabase.auth.getUser()).data.user?.id
       })
@@ -447,7 +464,16 @@ export const api = {
     return (data || []).map(row => ({ id: row.id, geometry: parseGeometry(row.previous_geometry), action: row.action, createdAt: row.created_at }));
   },
 
-  async getAnalysis(_projectId: string): Promise<AnalysisMetrics> {
-    throw new Error('Analysis results are not available until the processing worker writes them.');
+  async getAnalysis(projectId: string): Promise<AnalysisMetrics> {
+    if (!isSupabaseConfigured() || !supabase) throw new Error('Supabase is not configured.');
+    const { data, error } = await supabase
+      .from('analysis_results')
+      .select('*')
+      .eq('project_id', projectId)
+      .maybeSingle();
+
+    if (error) throw new Error(`Could not load analysis results: ${error.message}`);
+    if (!data) throw new Error('Analysis results are not available until the processing worker writes them.');
+    return mapAnalysis(data);
   }
 };

@@ -35,20 +35,42 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, activeProject:
   }, []);
 
   useEffect(() => {
-    if (propActiveProject) {
-      if (propActiveProject.id !== activeProject?.id) setActiveProject(propActiveProject);
-      return;
+    let cancelled = false;
+    const routeProjectId = location.pathname.match(
+      /^\/projects\/([^/]+)\/(?:map|analysis|export|upload|processing|parcel)(?:\/|$)/
+    )?.[1];
+
+    async function syncActiveProject() {
+      if (routeProjectId) {
+        const listedProject = projects.find(project => project.id === routeProjectId);
+        const routeProject = listedProject || await api.getProject(routeProjectId);
+
+        if (cancelled) return;
+        setActiveProject(routeProject);
+        if (routeProject && routeProject.id !== propActiveProject?.id) {
+          onProjectChange?.(routeProject);
+        }
+        return;
+      }
+
+      const defaultProject = propActiveProject || projects[0] || null;
+      if (cancelled) return;
+      setActiveProject(defaultProject);
+      if (defaultProject && defaultProject.id !== propActiveProject?.id) {
+        onProjectChange?.(defaultProject);
+      }
     }
 
-    const routeProjectId = location.pathname.match(/^\/projects\/([^/]+)/)?.[1];
-    const routeProject = routeProjectId && projects.find(project => project.id === routeProjectId);
-    const nextProject = routeProject || activeProject || projects[0] || null;
+    syncActiveProject().catch((err: any) => {
+      if (cancelled) return;
+      console.error('Failed to synchronize active project:', err);
+      setActiveProject(null);
+    });
 
-    if (nextProject && nextProject.id !== activeProject?.id) {
-      setActiveProject(nextProject);
-      onProjectChange?.(nextProject);
-    }
-  }, [location.pathname, projects, propActiveProject]);
+    return () => {
+      cancelled = true;
+    };
+  }, [location.pathname, projects, propActiveProject, onProjectChange]);
 
   const handleSelectProject = (project: Project) => {
     setActiveProject(project);

@@ -126,7 +126,7 @@ export const LoginPage: React.FC = () => {
               <span>Authentication Setup Required</span>
             </div>
             <p className="text-[11px] text-amber-800 leading-tight">
-              Please configure <code className="bg-amber-100 px-1 py-0.5 rounded font-mono text-[10px]">VITE_SUPABASE_URL</code> and <code className="bg-amber-100 px-1 py-0.5 rounded font-mono text-[10px]">VITE_SUPABASE_ANON_KEY</code> in your <code className="bg-amber-100 px-1 py-0.5 rounded font-mono text-[10px]">.env</code> file.
+              Please configure <code className="bg-amber-100 px-1 py-0.5 rounded font-mono text-[10px]">VITE_SUPABASE_URL</code> and <code className="bg-amber-100 px-1 py-0.5 rounded font-mono text-[10px]">VITE_SUPABASE_PUBLISHABLE_KEY</code> in your <code className="bg-amber-100 px-1 py-0.5 rounded font-mono text-[10px]">.env</code> file.
             </p>
           </div>
         )}

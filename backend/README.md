@@ -2,13 +2,11 @@
 
 This service performs real, local semantic segmentation and writes project-scoped GeoJSON/features to Supabase. It never creates synthetic completion data.
 
-## Model
+## Models
 
-`nvidia/segformer-b0-finetuned-ade-512-512` via Hugging Face Transformers (`SegformerForSemanticSegmentation`) is a lightweight MIT-B0 SegFormer semantic-segmentation checkpoint with an ADE20K-finetuned decoder. It is used for masks whose ADE20K labels include `building`, `house`, `skyscraper`, and `road`. It expects RGB imagery; GeoTIFF bands are converted to an 8-bit RGB tile for inference. The checkpoint is general-scene, not cadastral or aerial-specialized, so outputs are AI-assisted prototype suggestions and require surveyor review. It does not provide legal parcel boundaries or government-grade accuracy.
-
-Road centerlines use a separate MIT-licensed `teohyc/Satellite-Road-Segmentation-UNet` checkpoint trained on the Massachusetts Roads Dataset. It is downloaded to `backend/models/` on first road inference and remains `ai_extracted`; it never creates official cadastral data.
-
-The Windows setup installs the geospatial, PyTorch, and Hugging Face model packages from `requirements.txt`. The checkpoint is downloaded on first inference. If those packages or model weights are unavailable, `/v1/process` returns HTTP 503 with `AI model is not configured yet.` and never fabricates processing results.
+- **Building Extraction**: `tomascanivari/segformer-b0-finetuned-buildings` via Hugging Face Transformers (`SegformerForSemanticSegmentation`) is a SegFormer model specifically fine-tuned for satellite and aerial building segmentation. It provides direct building probability masks, cleaned with morphological hole filling and small object removal, simplified to clean building polygon footprints. Configurable via `BUILDING_MODEL_ID` and `BUILDING_MODEL_THRESHOLD`.
+- **Road Extraction**: `teohyc/Satellite-Road-Segmentation-UNet` checkpoint trained on satellite road imagery. It is downloaded to `backend/models/best_road_seg_unet.pth` and extracts road centerlines via skeletonization.
+- **Outputs**: Features remain `ai_extracted` with provenance and confidence scores, and roads are spatially validated and clipped against building polygons. Outputs are AI-assisted prototype suggestions for surveyor review and do not constitute legal cadastral records until verified.
 
 ## Start on Windows PowerShell
 

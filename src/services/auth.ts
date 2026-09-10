@@ -66,7 +66,7 @@ export const authService = {
     if (!isSupabaseConfigured() || !supabase) {
       return {
         success: false,
-        error: 'Authentication service is not configured. Please supply VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file.'
+        error: 'Authentication service is not configured. Please supply VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in your .env file.'
       };
     }
 

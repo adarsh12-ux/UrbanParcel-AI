@@ -110,9 +110,9 @@ export const ParcelDetailPage: React.FC = () => {
           <p className="text-[10px] text-slate-400 font-sans">Structural units</p>
         </div>
         <div className="bg-white p-3.5 rounded border border-slate-200 shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-0.5">
-          <p className="text-[10px] text-slate-500 font-sans uppercase font-medium">AI Confidence</p>
-          <p className="text-xl font-bold text-emerald-700">{parcel.confidence}%</p>
-          <p className="text-[10px] text-emerald-700 font-sans font-medium">U-Net Segmentation</p>
+          <p className="text-[10px] text-slate-500 font-sans uppercase font-medium">Data Provenance</p>
+          <p className="text-sm font-bold text-teal-800 truncate" title={parcel.source || 'user_imported_cadastral'}>{parcel.source === 'user_imported_cadastral' ? 'User Imported' : parcel.source || 'Cadastral'}</p>
+          <p className="text-[10px] text-slate-400 font-sans">Cadastral Boundary</p>
         </div>
       </div>
 

@@ -258,6 +258,12 @@ ALTER TABLE public.projects
   ADD COLUMN IF NOT EXISTS imagery_path TEXT,
   ADD COLUMN IF NOT EXISTS imagery_mime_type TEXT,
   ADD COLUMN IF NOT EXISTS imagery_checksum TEXT;
+ALTER TABLE public.projects
+  ADD COLUMN IF NOT EXISTS raster_crs TEXT,
+  ADD COLUMN IF NOT EXISTS raster_bounds JSONB,
+  ADD COLUMN IF NOT EXISTS survey_footprint JSONB,
+  ADD COLUMN IF NOT EXISTS geographic_mismatch BOOLEAN NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS geographic_diagnostic JSONB;
 
 DROP POLICY IF EXISTS "projects_select_all" ON public.projects;
 DROP POLICY IF EXISTS "projects_insert_all" ON public.projects;
@@ -316,6 +322,12 @@ CREATE TABLE IF NOT EXISTS public.processing_jobs (
   completed_at TIMESTAMPTZ,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+ALTER TABLE public.processing_jobs
+  ADD COLUMN IF NOT EXISTS raster_crs TEXT,
+  ADD COLUMN IF NOT EXISTS raster_bounds JSONB,
+  ADD COLUMN IF NOT EXISTS survey_footprint JSONB,
+  ADD COLUMN IF NOT EXISTS geographic_mismatch BOOLEAN NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS geographic_diagnostic JSONB;
 
 CREATE INDEX IF NOT EXISTS idx_processing_jobs_project_id ON public.processing_jobs(project_id, created_at DESC);
 ALTER TABLE public.processing_jobs ENABLE ROW LEVEL SECURITY;
@@ -333,10 +345,12 @@ CREATE TABLE IF NOT EXISTS public.parcels (
   perimeter_m NUMERIC,
   land_use TEXT,
   confidence NUMERIC,
-  source TEXT NOT NULL CHECK (source IN ('ai_extracted', 'official_cadastral', 'manual_edit', 'verified')),
+  source TEXT NOT NULL CHECK (source IN ('ai_extracted', 'official_cadastral', 'user_imported_cadastral', 'manual_edit', 'verified')),
   review_status TEXT NOT NULL DEFAULT 'needs_review' CHECK (review_status IN ('needs_review', 'verified', 'rejected')),
   attributes JSONB NOT NULL DEFAULT '{}'::jsonb,
-  geometry extensions.geometry(Polygon, 4326) NOT NULL,
+  subdivision_number TEXT,
+  source_file TEXT,
+  geometry extensions.geometry(MultiPolygon, 4326) NOT NULL,
   source_job_id UUID REFERENCES public.processing_jobs(id),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),

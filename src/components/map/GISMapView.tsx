@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { MapContainer, TileLayer, ImageOverlay, Polygon, Polyline, Tooltip, useMap } from 'react-leaflet';
 import { LocateFixed, Maximize, Minus, Plus } from 'lucide-react';
 import { Parcel, Building, Road } from '../../types';
+import { cleanRoadsAgainstBuildings, filterValidBuildingFeatures } from '../../utils/gisSpatial';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -34,6 +35,7 @@ interface GISMapViewProps {
   showImagery: boolean;
   imageryUrl?: string;
   imageryBounds?: [[number, number], [number, number]];
+  surveyFootprint?: GeoJSON.Polygon;
 }
 
 const collectGeometryPoints = (value: unknown, points: [number, number][]) => {
@@ -54,6 +56,7 @@ const MapController: React.FC<{
   buildings: Building[];
   roads: Road[];
   imageryBounds?: [[number, number], [number, number]];
+  surveyFootprint?: GeoJSON.Polygon;
 }> = ({ center, selectedParcel, parcels, buildings, roads, imageryBounds }) => {
   const map = useMap();
   useEffect(() => {
@@ -67,14 +70,16 @@ const MapController: React.FC<{
       return () => clearTimeout(timer);
     }
 
-    const points: [number, number][] = [];
-    [...parcels, ...buildings, ...roads].forEach(feature => collectGeometryPoints(feature.geometry?.coordinates, points));
-    if (points.length > 0) {
-      map.fitBounds(L.latLngBounds(points), { padding: [36, 36], maxZoom: 18, animate: true });
-    } else if (imageryBounds) {
+    if (imageryBounds) {
       map.fitBounds(L.latLngBounds(imageryBounds), { padding: [36, 36], maxZoom: 18, animate: true });
-    } else if (center && center[0] && center[1]) {
-      map.flyTo(center, 16, { duration: 1.2 });
+    } else {
+      const points: [number, number][] = [];
+      [...parcels, ...buildings, ...roads].forEach(feature => collectGeometryPoints(feature.geometry?.coordinates, points));
+      if (points.length > 0) {
+        map.fitBounds(L.latLngBounds(points), { padding: [36, 36], maxZoom: 18, animate: true });
+      } else if (center && center[0] && center[1]) {
+        map.flyTo(center, 16, { duration: 1.2 });
+      }
     }
 
     return () => clearTimeout(timer);
@@ -92,12 +97,12 @@ const MapControls: React.FC<{
   const map = useMap();
 
   const fitAllData = () => {
-    const points: [number, number][] = [];
-    [...parcels, ...buildings, ...roads].forEach(feature => collectGeometryPoints(feature.geometry?.coordinates, points));
-    if (points.length > 0) {
-      map.fitBounds(L.latLngBounds(points), { padding: [24, 24], maxZoom: 17 });
-    } else if (imageryBounds) {
+    if (imageryBounds) {
       map.fitBounds(L.latLngBounds(imageryBounds), { padding: [24, 24], maxZoom: 17 });
+    } else {
+      const points: [number, number][] = [];
+      [...parcels, ...buildings, ...roads].forEach(feature => collectGeometryPoints(feature.geometry?.coordinates, points));
+      if (points.length > 0) map.fitBounds(L.latLngBounds(points), { padding: [24, 24], maxZoom: 17 });
     }
   };
 
@@ -155,7 +160,8 @@ export const GISMapView: React.FC<GISMapViewProps> = ({
   center,
   showImagery,
   imageryUrl,
-  imageryBounds
+  imageryBounds,
+  surveyFootprint
 }) => {
   // Tile URL Map with OpenStreetMap as primary reliable provider
   const tileUrls = {
@@ -170,16 +176,18 @@ export const GISMapView: React.FC<GISMapViewProps> = ({
     dark: '&copy; <a href="https://carto.com/attributions">CARTO</a>'
   };
 
-  // Convert GeoJSON coordinates [[[lng, lat], ...]] -> Leaflet [[lat, lng], ...]
-  const toLeafletPolygon = (coords: number[][][]): [number, number][] => {
+  // Convert GeoJSON coordinates to Leaflet lat/lng positions
+  const toLeafletPolygon = (coords: any): [number, number][] => {
     if (!coords || !Array.isArray(coords) || !coords[0] || !Array.isArray(coords[0])) return [];
-    return coords[0].map(([lng, lat]) => [lat, lng]);
+    return coords[0].map(([lng, lat]: [number, number]) => [lat, lng]);
   };
 
-  const toLeafletLine = (coords: number[][]): [number, number][] => {
+  const toLeafletLine = (coords: any): [number, number][] => {
     if (!coords || !Array.isArray(coords)) return [];
-    return coords.map(([lng, lat]) => [lat, lng]);
+    return coords.map(([lng, lat]: [number, number]) => [lat, lng]);
   };
+
+  const surveyPositions = surveyFootprint?.coordinates?.[0]?.map(([lng, lat]) => [lat, lng] as [number, number]);
 
   // Dynamic style for Land Use types
   const getLandUseColor = (landUse: string, isSelected: boolean) => {
@@ -197,6 +205,18 @@ export const GISMapView: React.FC<GISMapViewProps> = ({
 
   const safeCenter: [number, number] = center;
 
+  // Building Feature Validation & False-Positive Filtering:
+  // Rejects large open-area polygons and calculates truthful geodesic areas & attributes.
+  const validBuildings = React.useMemo(() => {
+    return filterValidBuildingFeatures(buildings, true);
+  }, [buildings]);
+
+  // Spatial Validation & Conflict Resolution:
+  // Dynamically clip and remove road segments that intersect building footprint interiors.
+  const spatiallyCleanedRoads = React.useMemo(() => {
+    return cleanRoadsAgainstBuildings(roads, validBuildings, true);
+  }, [roads, validBuildings]);
+
   return (
     <div className="w-full h-full min-h-[400px] relative z-0">
       <MapContainer
@@ -206,6 +226,7 @@ export const GISMapView: React.FC<GISMapViewProps> = ({
         className="w-full h-full min-h-[400px] overflow-hidden z-0"
         zoomControl={true}
       >
+        {/* Layer 1: Basemap */}
         {showImagery && (
           <TileLayer
             key={basemap}
@@ -214,106 +235,150 @@ export const GISMapView: React.FC<GISMapViewProps> = ({
             maxZoom={19}
           />
         )}
+
+        {/* Layer 2: Drone Orthomosaic Imagery */}
         {showImagery && imageryUrl && imageryBounds && (
           <ImageOverlay url={imageryUrl} bounds={imageryBounds} opacity={0.65} zIndex={1} />
+        )}
+
+        {/* Layer 2b: Survey Footprint (derived strictly from uploaded GeoTIFF) */}
+        {(surveyPositions || imageryBounds) && (
+          <Polygon
+            positions={surveyPositions || imageryBounds!}
+            interactive={false}
+            pathOptions={{ color: '#0f766e', weight: 2, dashArray: '6 4', fillColor: '#14b8a6', fillOpacity: 0.05 }}
+          />
         )}
 
         <MapController
           center={safeCenter}
           selectedParcel={selectedParcel}
           parcels={parcels}
-          buildings={buildings}
-          roads={roads}
+          buildings={validBuildings}
+          roads={spatiallyCleanedRoads}
           imageryBounds={imageryBounds}
         />
-        <MapControls parcels={parcels} buildings={buildings} roads={roads} imageryBounds={imageryBounds} />
+        <MapControls parcels={parcels} buildings={validBuildings} roads={spatiallyCleanedRoads} imageryBounds={imageryBounds} />
 
-        {/* Parcels Layer */}
+        {/* Layer 3: Real Cadastral Parcel Boundaries (User-Imported) */}
         {layersState.parcels && parcels.map((parcel) => {
-          const positions = toLeafletPolygon(parcel.geometry?.coordinates);
-          if (!positions || positions.length < 3) return null;
-
+          const isMulti = parcel.geometry?.type === 'MultiPolygon';
+          const polygonCoordinates = isMulti
+            ? (parcel.geometry.coordinates as number[][][][])
+            : [parcel.geometry?.coordinates as number[][][]];
           const isSelected = selectedParcel?.id === parcel.id;
           const strokeColor = isSelected ? '#0f766e' : getLandUseColor(parcel.landUse, false);
 
-          return (
-            <Polygon
-              key={parcel.id}
-              positions={positions}
-              pathOptions={{
-                color: strokeColor,
-                weight: isSelected ? 3.5 : 2,
-                fillColor: strokeColor,
-                fillOpacity: isSelected ? 0.4 : 0.2,
-                dashArray: parcel.status === 'Flagged' ? '6, 6' : undefined
-              }}
-              eventHandlers={{
-                click: () => onSelectParcel(parcel)
-              }}
-            >
-              <Tooltip sticky direction="top" className="custom-leaflet-tooltip font-sans text-xs">
-                <div className="p-1 font-sans space-y-0.5">
-                  <div className="flex items-center gap-1 font-bold text-slate-900">
-                    <span>{parcel.id}</span>
-                    <span className="text-[10px] text-teal-800 font-mono">({parcel.surveyNo})</span>
+          return polygonCoordinates.map((polygon, polygonIndex) => {
+            const positions = toLeafletPolygon(polygon);
+            if (positions.length < 3) return null;
+            return (
+              <Polygon
+                key={`${parcel.id}-${polygonIndex}`}
+                positions={positions}
+                pathOptions={{
+                  color: strokeColor,
+                  weight: isSelected ? 3.5 : 2,
+                  fillColor: strokeColor,
+                  fillOpacity: isSelected ? 0.4 : 0.18,
+                  dashArray: parcel.status === 'Flagged' ? '6, 6' : undefined
+                }}
+                eventHandlers={{ click: () => onSelectParcel(parcel) }}
+              >
+                <Tooltip sticky direction="top" className="custom-leaflet-tooltip font-sans text-xs">
+                  <div className="p-1 font-sans space-y-0.5">
+                    <div className="flex items-center gap-1 font-bold text-slate-900">
+                      <span>{parcel.id}</span>
+                      <span className="text-[10px] text-teal-800 font-mono">({parcel.surveyNo})</span>
+                    </div>
+                    <p className="text-[11px] text-slate-700">Area: <strong>{parcel.areaSqM.toLocaleString()} m²</strong> | Land Use: {parcel.landUse}</p>
+                    <p className="text-[10px] text-slate-500 font-medium">Source: {parcel.source || 'User Imported Cadastral Data'}</p>
                   </div>
-                  <p className="text-[11px] text-slate-700">Area: <strong>{parcel.areaSqM} m²</strong> | Land Use: {parcel.landUse}</p>
-                  <p className="text-[10px] text-emerald-700 font-medium">AI Confidence: {parcel.confidence}%</p>
-                </div>
-              </Tooltip>
-            </Polygon>
-          );
+                </Tooltip>
+              </Polygon>
+            );
+          });
         })}
 
-        {/* Buildings Layer */}
-        {layersState.buildings && buildings.map((bld) => {
-          const positions = toLeafletPolygon(bld.geometry?.coordinates);
-          if (!positions || positions.length < 3) return null;
+        {/* Layer 4: AI Detected Buildings (SegFormer) - validated footprints only */}
+        {layersState.buildings && validBuildings.map((bld) => {
+          const isMulti = bld.geometry?.type === 'MultiPolygon';
+          const polygons = isMulti
+            ? (bld.geometry.coordinates as number[][][][])
+            : [bld.geometry?.coordinates as number[][][]];
 
-          return (
-            <Polygon
-              key={bld.id}
-              positions={positions}
-              pathOptions={{
-                color: '#d97706',
-                weight: 1.5,
-                fillColor: '#f59e0b',
-                fillOpacity: 0.7
-              }}
-            >
-              <Tooltip sticky direction="top">
-                <div className="p-1 text-xs">
-                  <p className="font-bold text-slate-900">{bld.type}</p>
-                  <p className="text-[10px] text-slate-700">Area: {bld.areaSqM} m² | Floors: {bld.floors}</p>
-                </div>
-              </Tooltip>
-            </Polygon>
-          );
+          return polygons.map((poly, polyIdx) => {
+            const positions = toLeafletPolygon(poly);
+            if (!positions || positions.length < 3) return null;
+
+            return (
+              <Polygon
+                key={`${bld.id}-${polyIdx}`}
+                positions={positions}
+                pathOptions={{
+                  color: '#d97706',
+                  weight: 1.5,
+                  fillColor: '#f59e0b',
+                  fillOpacity: 0.65
+                }}
+              >
+                <Tooltip sticky direction="top" className="custom-leaflet-tooltip font-sans text-xs">
+                  <div className="p-1.5 font-sans space-y-0.5">
+                    <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-0.5">
+                      <p className="font-bold text-slate-900">{bld.id.startsWith('B-') ? bld.id : `Building ${bld.id.slice(0, 8)}`}</p>
+                      <span className="text-[10px] font-mono px-1 py-0.2 rounded bg-amber-100 text-amber-900 font-semibold">
+                        {bld.confidence ? `${Math.round(bld.confidence * 100)}%` : 'AI'}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-700">
+                      Footprint Area: <strong>{bld.areaSqM.toLocaleString()} m²</strong>
+                    </p>
+                    <p className="text-[10px] text-slate-600">
+                      Floors: <span className="font-medium text-slate-800">{bld.floors && bld.floors !== 'Unknown' ? bld.floors : 'Unknown'}</span>
+                    </p>
+                    <div className="flex items-center gap-1 text-[10px] text-slate-500 pt-0.5 border-t border-slate-100">
+                      <span>Source: {bld.source === 'ai_extracted' ? 'AI Extracted' : bld.source || 'AI Detection'}</span>
+                      <span>•</span>
+                      <span className="capitalize">{bld.reviewStatus || 'Pending'}</span>
+                    </div>
+                  </div>
+                </Tooltip>
+              </Polygon>
+            );
+          });
         })}
 
-        {/* Roads Layer */}
-        {layersState.roads && roads.map((road) => {
-          const positions = toLeafletLine(road.geometry?.coordinates);
-          if (!positions || positions.length < 2) return null;
+        {/* Layer 5: AI Detected Roads (SegFormer) - spatially validated & clipped */}
+        {layersState.roads && spatiallyCleanedRoads.map((road) => {
+          const isMulti = road.geometry?.type === 'MultiLineString';
+          const lines = isMulti
+            ? (road.geometry.coordinates as number[][][])
+            : [road.geometry?.coordinates as number[][]];
 
-          return (
-            <Polyline
-              key={road.id}
-              positions={positions}
-              pathOptions={{
-                color: '#166534',
-                weight: 5,
-                opacity: 0.85
-              }}
-            >
-              <Tooltip sticky direction="top">
-                <div className="p-1 text-xs">
-                  <p className="font-bold text-slate-900">{road.name}</p>
-                  <p className="text-[10px] text-slate-700">Width: {road.widthM}m | {road.surfaceType}</p>
-                </div>
-              </Tooltip>
-            </Polyline>
-          );
+          return lines.map((lineCoords, lineIdx) => {
+            const positions = toLeafletLine(lineCoords);
+            if (!positions || positions.length < 2) return null;
+
+            return (
+              <Polyline
+                key={`${road.id}-${lineIdx}`}
+                positions={positions}
+                pathOptions={{
+                  color: '#166534',
+                  weight: 4,
+                  opacity: 0.85
+                }}
+              >
+                <Tooltip sticky direction="top">
+                  <div className="p-1 text-xs space-y-0.5">
+                    <p className="font-bold text-slate-900">{road.name || 'Road'}</p>
+                    <p className="text-[10px] text-slate-700">Width: {road.widthM}m | {road.surfaceType}</p>
+                    <p className="text-[10px] text-emerald-800 font-medium">Source: {road.source || 'AI Detection (SegFormer)'}</p>
+                  </div>
+                </Tooltip>
+              </Polyline>
+            );
+          });
         })}
       </MapContainer>
     </div>

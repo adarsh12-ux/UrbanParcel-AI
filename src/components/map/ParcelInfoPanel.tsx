@@ -94,9 +94,11 @@ export const ParcelInfoPanel: React.FC<ParcelInfoPanelProps> = ({
         <div className="flex items-center justify-between p-1.5 rounded bg-slate-50/70 border border-slate-100">
           <span className="text-slate-500 flex items-center gap-1.5 font-medium">
             <ShieldCheck className="w-3.5 h-3.5 text-teal-700" />
-            <span>AI Confidence</span>
+            <span>Data Source</span>
           </span>
-          <span className="font-mono font-semibold text-emerald-700">{parcel.confidence}%</span>
+          <span className="font-mono text-xs font-semibold text-teal-800 truncate max-w-[120px]">
+            {parcel.source === 'user_imported_cadastral' ? 'User Imported' : parcel.source || 'Cadastral'}
+          </span>
         </div>
 
         <div className="flex items-center justify-between p-1.5 rounded bg-slate-50/70 border border-slate-100">

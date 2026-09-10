@@ -22,6 +22,11 @@ export interface Project {
   imageryPath?: string;
   imageryMimeType?: string;
   imageryChecksum?: string;
+  rasterCrs?: string;
+  rasterBounds?: number[];
+  surveyFootprint?: GeoJSON.Polygon;
+  geographicMismatch?: boolean;
+  geographicDiagnostic?: Record<string, unknown>;
 }
 
 export type LandUseType = 'Residential' | 'Commercial' | 'Industrial' | 'Agricultural' | 'Mixed' | 'Government' | 'Vacant';
@@ -30,6 +35,8 @@ export interface Parcel {
   id: string; // e.g. "UP-1001"
   projectId?: string;
   surveyNo: string;
+  subdivisionNo?: string;
+  sourceFile?: string;
   areaSqM: number;
   perimeterM: number;
   buildingCount: number;
@@ -38,14 +45,15 @@ export interface Parcel {
   confidence: number; // e.g. 94.7
   center: [number, number]; // [lat, lng]
   geometry: {
-    type: 'Polygon';
-    coordinates: number[][][]; // GeoJSON format [lng, lat]
+    type: 'Polygon' | 'MultiPolygon';
+    coordinates: number[][][] | number[][][][]; // GeoJSON format [lng, lat]
   };
   ownerName: string;
   status: 'Verified' | 'Flagged' | 'Pending Review';
-  source?: 'ai_extracted' | 'official_cadastral' | 'manual_edit' | 'verified';
+  source?: 'ai_extracted' | 'official_cadastral' | 'user_imported_cadastral' | 'manual_edit' | 'verified';
   reviewStatus?: 'needs_review' | 'verified' | 'rejected';
   notes?: string;
+  attributes?: Record<string, any>;
 }
 
 export interface Building {
@@ -53,12 +61,15 @@ export interface Building {
   parcelId: string;
   type: string;
   areaSqM: number;
-  floors: number;
+  floors: number | string;
   confidence: number;
+  source?: string;
+  reviewStatus?: string;
   geometry: {
-    type: 'Polygon';
-    coordinates: number[][][];
+    type: 'Polygon' | 'MultiPolygon';
+    coordinates: number[][][] | number[][][][];
   };
+  attributes?: Record<string, any>;
 }
 
 export interface Road {
@@ -67,17 +78,19 @@ export interface Road {
   widthM: number;
   surfaceType: 'Asphalt' | 'Concrete' | 'Unpaved';
   confidence: number;
+  source?: string;
   geometry: {
-    type: 'LineString';
-    coordinates: number[][];
+    type: 'LineString' | 'MultiLineString';
+    coordinates: number[][] | number[][][];
   };
+  attributes?: Record<string, any>;
 }
 
 export interface WaterBody {
   id: string;
   type: 'Pond' | 'Canal' | 'Drainage';
   geometry: {
-    type: 'Polygon';
+    type: 'Polygon' | 'MultiPolygon';
     coordinates: number[][][];
   };
 }
@@ -120,6 +133,11 @@ export interface ProcessingJob {
   resultGeojson?: GeoJSON.FeatureCollection;
   modelName?: string;
   resultCrs?: string;
+  rasterCrs?: string;
+  rasterBounds?: number[];
+  surveyFootprint?: GeoJSON.Polygon;
+  geographicMismatch?: boolean;
+  geographicDiagnostic?: Record<string, unknown>;
 }
 
 export interface GroundTruthComparison {
@@ -134,14 +152,22 @@ export interface GroundTruthComparison {
 }
 
 export interface AnalysisMetrics {
-  precision: number;
-  recall: number;
-  f1Score: number;
-  meanIoU: number;
+  precision: number | null;
+  recall: number | null;
+  f1Score: number | null;
+  meanIoU: number | null;
+  hasGroundTruth?: boolean;
   totalParcelsDetected: number;
   totalBuildingsDetected: number;
   totalRoadSegments: number;
   totalWaterBodies: number;
+  totalBuildingAreaSqM?: number;
+  avgBuildingAreaSqM?: number;
+  totalRoadLengthM?: number;
+  avgRoadLengthM?: number;
+  verifiedBuildingsCount?: number;
+  pendingBuildingsCount?: number;
+  rejectedBuildingsCount?: number;
   landUseBreakdown: { name: string; value: number; color: string }[];
   confidenceDistribution: { range: string; count: number }[];
   precisionRecallCurve: { recall: number; precision: number }[];

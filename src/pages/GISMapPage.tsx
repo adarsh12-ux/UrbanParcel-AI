@@ -18,7 +18,7 @@ export const GISMapPage: React.FC = () => {
   const [parcels, setParcels] = useState<Parcel[]>([]);
   const [buildings, setBuildings] = useState<Building[]>([]);
   const [roads, setRoads] = useState<Road[]>([]);
-  const [imagery, setImagery] = useState<{ url: string; bounds?: [[number, number], [number, number]] } | null>(null);
+  const [imagery, setImagery] = useState<{ url: string; bounds?: [[number, number], [number, number]]; survey_footprint?: GeoJSON.Polygon } | null>(null);
   const [selectedParcel, setSelectedParcel] = useState<Parcel | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchError, setSearchError] = useState<string | null>(null);
@@ -224,7 +224,7 @@ if (error || !project) {
       {/* Main Map Container */}
       <div className="flex-1 relative w-full h-full">
         <div className="absolute top-2 left-1/2 z-10 -translate-x-1/2 rounded bg-white/95 px-3 py-1.5 text-[11px] text-slate-600 shadow-sm">
-          {project.location} · {project.surveyAreaSqKm} km² survey area
+          Parcels: {parcels.length} · {project.location} · {project.surveyAreaSqKm} km² survey area
         </div>
 
         {/* Leaflet Map */}
@@ -243,13 +243,14 @@ if (error || !project) {
           showImagery={layersState.droneImagery}
           imageryUrl={imagery?.url}
           imageryBounds={imagery?.bounds}
+          surveyFootprint={imagery?.survey_footprint}
         />
 
         {parcels.length === 0 && (
           <div className="absolute inset-0 z-[5] flex items-center justify-center pointer-events-none p-4">
             <div className="rounded border border-slate-200 bg-white/95 px-4 py-3 text-center text-xs text-slate-600 shadow-md">
               <AlertCircle className="mx-auto mb-1 h-4 w-4 text-amber-600" />
-              No parcel boundary data is available for this project.
+              No cadastral boundary data has been imported for this project.
             </div>
           </div>
         )}

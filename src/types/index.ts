@@ -117,6 +117,9 @@ export interface ProcessingJob {
   createdAt: string;
   updatedAt: string;
   completedAt?: string;
+  resultGeojson?: GeoJSON.FeatureCollection;
+  modelName?: string;
+  resultCrs?: string;
 }
 
 export interface GroundTruthComparison {

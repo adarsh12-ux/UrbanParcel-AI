@@ -273,7 +273,7 @@ export const DroneUploadPage: React.FC = () => {
         bounds: selectedFile.bounds
       });
       const job = await api.createProcessingJob(id, imageryId);
-      await api.triggerProcessing(job);
+      await api.processGeoTiff(job, selectedFile.file);
       navigate(`/projects/${id}/processing?job=${job.id}`);
     } catch (err: any) {
       setUploadError(err?.message || 'Upload failed. No processing job was created.');

@@ -49,7 +49,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, activeProject
       name: 'Interactive GIS Map',
       path: activeProjectId
         ? `/projects/${activeProjectId}/map`
-        : '/projects',
+        : '/projects1',
       icon: Map,
       section: 'SPATIAL WORKSPACE',
       requiresProject: true

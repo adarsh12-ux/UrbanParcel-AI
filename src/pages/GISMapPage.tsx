@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { Search, MapPin, Download, BarChart3, SlidersHorizontal, AlertCircle } from 'lucide-react';
+import { Search, MapPin, Download, BarChart3, SlidersHorizontal, AlertCircle, FileUp } from 'lucide-react';
 import { Project, Parcel, Building, Road } from '../types';
 import { api } from '../services/api';
 import { GISMapView } from '../components/map/GISMapView';
@@ -209,6 +209,14 @@ if (error || !project) {
             <Download className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Export GIS</span>
             <span className="sm:hidden">Export</span>
+          </button>
+          <button
+            onClick={() => navigate(`/projects/${id}/cadastral-import`)}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium transition-colors cursor-pointer"
+          >
+            <FileUp className="w-3.5 h-3.5 text-teal-700" />
+            <span className="hidden sm:inline">Import Cadastral</span>
+            <span className="sm:hidden">Import</span>
           </button>
         </div>
       </div>

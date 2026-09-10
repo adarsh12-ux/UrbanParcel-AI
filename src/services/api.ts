@@ -102,7 +102,10 @@ function mapProcessingJob(row: any): ProcessingJob {
     workerJobId: row.worker_job_id || undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
-    completedAt: row.completed_at || undefined
+    completedAt: row.completed_at || undefined,
+    resultGeojson: row.result_geojson || undefined,
+    modelName: row.model_name || undefined,
+    resultCrs: row.result_crs || undefined
   };
 }
 
@@ -354,20 +357,51 @@ export const api = {
   },
 
   async triggerProcessing(job: ProcessingJob): Promise<{ available: boolean }> {
-    const serviceUrl = import.meta.env.VITE_PROCESSING_SERVICE_URL;
-    if (!serviceUrl) return { available: false };
-    const response = await fetch(`${serviceUrl.replace(/\/$/, '')}/v1/jobs`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ job_id: job.id, project_id: job.projectId, imagery_id: job.imageryId, output_srid: 4326 })
-    });
-    if (!response.ok) {
+    return this.processGeoTiff(job);
+  },
+
+  async processGeoTiff(job: ProcessingJob, file?: File): Promise<{ available: boolean; jobId: string; status: string }> {
+    const serviceUrl = (import.meta.env.VITE_API_URL || 'http://localhost:8000').trim();
+    try {
+      const baseUrl = serviceUrl.replace(/\/$/, '');
+      const healthResponse = await fetch(`${baseUrl}/health`);
+      const healthBody = await healthResponse.json().catch(() => null);
+      if (!healthResponse.ok || healthBody?.status !== 'ok') {
+        throw new Error(healthBody?.detail || 'AI processing service is unavailable. Start the Python backend and retry.');
+      }
+      const response = await fetch(`${baseUrl}/v1/jobs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          job_id: job.id,
+          project_id: job.projectId,
+          imagery_id: job.imageryId,
+          output_srid: 4326
+        })
+      });
       const body = await response.json().catch(() => null);
-      const message = body?.error?.message || `Processing service returned HTTP ${response.status}.`;
+      if (!response.ok) throw new Error(body?.detail || `Processing service returned HTTP ${response.status}.`);
+      return { available: true, jobId: body?.job_id || job.id, status: body?.status || 'accepted' };
+    } catch (error: any) {
+      const message = error?.message?.includes('AI model is not configured yet')
+        ? 'AI model is not configured yet.'
+        : error?.message?.includes('Failed to fetch') || error?.message?.includes('NetworkError')
+          ? 'AI processing service is unavailable. Start the Python backend and retry.'
+          : error?.message || 'AI processing service is unavailable. Start the Python backend and retry.';
       await supabase?.from('processing_jobs').update({ status: 'failed', error_message: message, updated_at: new Date().toISOString() }).eq('id', job.id);
       throw new Error(message);
     }
-    return { available: true };
+  },
+
+  async importOfficialCadastral(projectId: string, file: File): Promise<{ inserted: number; parcels: number; source: string }> {
+    const serviceUrl = (import.meta.env.VITE_API_URL || 'http://localhost:8000').trim().replace(/\/$/, '');
+    const formData = new FormData();
+    formData.append('project_id', projectId);
+    formData.append('file', file, file.name);
+    const response = await fetch(`${serviceUrl}/v1/cadastral-import`, { method: 'POST', body: formData });
+    const body = await response.json().catch(() => null);
+    if (!response.ok) throw new Error(body?.detail || `Cadastral import returned HTTP ${response.status}.`);
+    return body;
   },
 
   async getProcessingJob(projectId: string): Promise<ProcessingJob | null> {
@@ -379,9 +413,11 @@ export const api = {
 
   async retryProcessing(jobId: string): Promise<ProcessingJob> {
     if (!isSupabaseConfigured() || !supabase) throw new Error('Supabase is not configured.');
-    const { data, error } = await supabase.from('processing_jobs').update({ status: 'uploaded', progress: 0, error_message: null, updated_at: new Date().toISOString() }).eq('id', jobId).select().single();
+    const { data, error } = await supabase.from('processing_jobs').update({ status: 'uploaded', progress: 0, current_step: 'Queued for Python AI service', error_message: null, updated_at: new Date().toISOString() }).eq('id', jobId).select().single();
     if (error || !data) throw new Error(`Could not retry processing: ${error?.message || 'No job returned.'}`);
-    return mapProcessingJob(data);
+    const job = mapProcessingJob(data);
+    await this.processGeoTiff(job);
+    return job;
   },
 
   async getImageryUrl(projectId: string): Promise<string | null> {
@@ -396,6 +432,13 @@ export const api = {
 
   async getImagery(projectId: string): Promise<{ url: string; bounds?: [[number, number], [number, number]] } | null> {
     if (!isSupabaseConfigured() || !supabase) throw new Error('Supabase is not configured.');
+    const serviceUrl = (import.meta.env.VITE_API_URL || 'http://localhost:8000').trim().replace(/\/$/, '');
+    const imageryResponse = await fetch(`${serviceUrl}/v1/imagery/${encodeURIComponent(projectId)}`);
+    const imageryBody = await imageryResponse.json().catch(() => null);
+    if (!imageryResponse.ok) throw new Error(imageryBody?.detail || `Could not load project imagery (HTTP ${imageryResponse.status}).`);
+    if (imageryBody?.url) return imageryBody;
+
+    // Keep the existing Supabase fallback for projects without a backend imagery record.
     const { data: imagery, error } = await supabase
       .from('project_imagery')
       .select('storage_path, metadata, crs')

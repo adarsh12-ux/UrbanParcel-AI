@@ -36,8 +36,25 @@ interface GISMapViewProps {
   imageryBounds?: [[number, number], [number, number]];
 }
 
-// Controller component to invalidate map size & fly to selected parcel
-const MapController: React.FC<{ center: [number, number]; zoom?: number }> = ({ center, zoom = 16 }) => {
+const collectGeometryPoints = (value: unknown, points: [number, number][]) => {
+  if (!Array.isArray(value)) return;
+  if (value.length >= 2 && value.every(item => typeof item === 'number' && Number.isFinite(item))) {
+    const [lng, lat] = value;
+    if (lng >= -180 && lng <= 180 && lat >= -90 && lat <= 90) points.push([lat, lng]);
+    return;
+  }
+  value.forEach(item => collectGeometryPoints(item, points));
+};
+
+// Controller component to invalidate map size and fit the actual persisted data.
+const MapController: React.FC<{
+  center: [number, number];
+  selectedParcel: Parcel | null;
+  parcels: Parcel[];
+  buildings: Building[];
+  roads: Road[];
+  imageryBounds?: [[number, number], [number, number]];
+}> = ({ center, selectedParcel, parcels, buildings, roads, imageryBounds }) => {
   const map = useMap();
   useEffect(() => {
     map.invalidateSize();
@@ -45,25 +62,42 @@ const MapController: React.FC<{ center: [number, number]; zoom?: number }> = ({ 
       map.invalidateSize();
     }, 150);
 
-    if (center && center[0] && center[1]) {
-      map.flyTo(center, zoom, { duration: 1.2 });
+    if (selectedParcel?.center?.[0] && selectedParcel.center[1]) {
+      map.flyTo(selectedParcel.center, 17, { duration: 1.2 });
+      return () => clearTimeout(timer);
+    }
+
+    const points: [number, number][] = [];
+    [...parcels, ...buildings, ...roads].forEach(feature => collectGeometryPoints(feature.geometry?.coordinates, points));
+    if (points.length > 0) {
+      map.fitBounds(L.latLngBounds(points), { padding: [36, 36], maxZoom: 18, animate: true });
+    } else if (imageryBounds) {
+      map.fitBounds(L.latLngBounds(imageryBounds), { padding: [36, 36], maxZoom: 18, animate: true });
+    } else if (center && center[0] && center[1]) {
+      map.flyTo(center, 16, { duration: 1.2 });
     }
 
     return () => clearTimeout(timer);
-  }, [center, zoom, map]);
+  }, [center, selectedParcel, parcels, buildings, roads, imageryBounds, map]);
 
   return null;
 };
 
-const MapControls: React.FC<{ center: [number, number]; parcels: Parcel[] }> = ({ center, parcels }) => {
+const MapControls: React.FC<{
+  parcels: Parcel[];
+  buildings: Building[];
+  roads: Road[];
+  imageryBounds?: [[number, number], [number, number]];
+}> = ({ parcels, buildings, roads, imageryBounds }) => {
   const map = useMap();
 
-  const fitAllParcels = () => {
-    const points = parcels.flatMap(parcel =>
-      parcel.geometry.coordinates[0].map(([lng, lat]) => [lat, lng] as [number, number])
-    );
+  const fitAllData = () => {
+    const points: [number, number][] = [];
+    [...parcels, ...buildings, ...roads].forEach(feature => collectGeometryPoints(feature.geometry?.coordinates, points));
     if (points.length > 0) {
       map.fitBounds(L.latLngBounds(points), { padding: [24, 24], maxZoom: 17 });
+    } else if (imageryBounds) {
+      map.fitBounds(L.latLngBounds(imageryBounds), { padding: [24, 24], maxZoom: 17 });
     }
   };
 
@@ -89,7 +123,7 @@ const MapControls: React.FC<{ center: [number, number]; parcels: Parcel[] }> = (
       </button>
       <button
         type="button"
-        onClick={() => map.flyTo(center, 16, { duration: 0.6 })}
+        onClick={fitAllData}
         title="Reset project view"
         aria-label="Reset project view"
         className="rounded p-1.5 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
@@ -98,10 +132,10 @@ const MapControls: React.FC<{ center: [number, number]; parcels: Parcel[] }> = (
       </button>
       <button
         type="button"
-        onClick={fitAllParcels}
-        disabled={parcels.length === 0}
-        title="Fit all parcels"
-        aria-label="Fit all parcels"
+        onClick={fitAllData}
+        disabled={parcels.length === 0 && buildings.length === 0 && roads.length === 0 && !imageryBounds}
+        title="Fit all project data"
+        aria-label="Fit all project data"
         className="rounded p-1.5 text-slate-600 hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300"
       >
         <Maximize className="h-4 w-4" />
@@ -184,8 +218,15 @@ export const GISMapView: React.FC<GISMapViewProps> = ({
           <ImageOverlay url={imageryUrl} bounds={imageryBounds} opacity={0.65} zIndex={1} />
         )}
 
-        <MapController center={selectedParcel ? selectedParcel.center : safeCenter} />
-        <MapControls center={safeCenter} parcels={parcels} />
+        <MapController
+          center={safeCenter}
+          selectedParcel={selectedParcel}
+          parcels={parcels}
+          buildings={buildings}
+          roads={roads}
+          imageryBounds={imageryBounds}
+        />
+        <MapControls parcels={parcels} buildings={buildings} roads={roads} imageryBounds={imageryBounds} />
 
         {/* Parcels Layer */}
         {layersState.parcels && parcels.map((parcel) => {

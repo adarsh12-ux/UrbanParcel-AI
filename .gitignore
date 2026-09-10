@@ -1,22 +1,69 @@
-# Logs
-logs
+# Logs and temporary files
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+*.tmp
+*.temp
+tmp/
+temp/
 
 # Node modules & dependencies
 node_modules/
 dist/
 dist-ssr/
 *.tsbuildinfo
+coverage/
+
+# Downloaded local AI checkpoints
+backend/models/
+**/models/
+**/.cache/
+**/cache/
+**/huggingface/
+**/transformers_cache/
+**/torch/
+*.pth
+*.pt
+*.bin
+*.safetensors
+*.onnx
 
 # Local Environment Variables
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# Python environments and caches
+venv/
+.venv/
+**/venv/
+**/.venv/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+
+# Uploaded imagery and generated processing output
+*.tif
+*.tiff
+*.geotiff
+uploads/
+**/uploads/
+output/
+outputs/
+processing_output/
+generated/
+*.geojson
+*.gpkg
+*.shp
+*.shx
+*.dbf
+*.prj
+*.cpg
 
 # Editor & System Files
 .idea

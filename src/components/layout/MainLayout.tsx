@@ -37,7 +37,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, activeProject:
   useEffect(() => {
     let cancelled = false;
     const routeProjectId = location.pathname.match(
-      /^\/projects\/([^/]+)\/(?:map|analysis|export|upload|processing|parcel)(?:\/|$)/
+      /^\/projects\/([^/]+)\/(?:map|analysis|export|upload|processing|cadastral-import|parcel)(?:\/|$)/
     )?.[1];
 
     async function syncActiveProject() {

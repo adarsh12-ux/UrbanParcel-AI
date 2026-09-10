@@ -78,7 +78,7 @@ export const AIProcessingPage: React.FC = () => {
   if (!job) return null;
   const isCompleted = job.status === 'completed';
   const isFailed = job.status === 'failed';
-  const workerUnavailable = job.status === 'uploaded';
+  const workerUnavailable = job.status === 'uploaded' || error?.includes('AI processing service is unavailable');
 
   return (
     <div className="p-4 sm:p-6 lg:p-7 max-w-5xl mx-auto w-full space-y-5">
@@ -89,7 +89,7 @@ export const AIProcessingPage: React.FC = () => {
 
       {(error || workerUnavailable || isFailed) && (
         <div className={`rounded border p-3 text-xs ${isFailed ? 'border-rose-200 bg-rose-50 text-rose-800' : 'border-amber-200 bg-amber-50 text-amber-900'}`}>
-          {error || job.errorMessage || (workerUnavailable ? 'Processing is awaiting the configured Python/GDAL/AI worker. No synthetic progress or completion will be shown.' : 'Processing failed. Review the worker error and retry when the input or service is ready.')}
+          {error || job.errorMessage || (workerUnavailable ? 'AI processing service is unavailable. Start the Python backend and retry.' : 'Processing failed. Review the worker error and retry when the input or service is ready.')}
         </div>
       )}
 
@@ -117,7 +117,8 @@ export const AIProcessingPage: React.FC = () => {
 
       <div className="flex justify-end gap-2 pt-3 border-t border-slate-200">
         {(isFailed || workerUnavailable) && <button onClick={handleRetry} disabled={retrying} className="inline-flex items-center gap-2 rounded border border-slate-300 bg-white px-4 py-2.5 text-xs font-medium text-slate-700"><RefreshCw className={retrying ? 'animate-spin' : ''} size={14} />Retry processing</button>}
-        <button onClick={() => navigate(isCompleted ? `/projects/${id}/map` : `/projects/${id}/upload`)} disabled={!isCompleted} className={`inline-flex items-center gap-2 rounded px-6 py-2.5 text-xs font-medium ${isCompleted ? 'bg-teal-700 text-white' : 'bg-slate-100 text-slate-400 border border-slate-200'}`}>Open Interactive GIS Map<ArrowRight className="w-4 h-4" /></button>
+        <button onClick={() => navigate(`/projects/${id}/upload`)} className="inline-flex items-center gap-2 rounded border border-slate-300 bg-white px-4 py-2.5 text-xs font-medium text-slate-700">Back to Upload</button>
+        <button onClick={() => navigate(`/projects/${id}/map`)} disabled={!isCompleted} className={`inline-flex items-center gap-2 rounded px-6 py-2.5 text-xs font-medium ${isCompleted ? 'bg-teal-700 text-white' : 'bg-slate-100 text-slate-400 border border-slate-200'}`}>Open Interactive GIS Map<ArrowRight className="w-4 h-4" /></button>
       </div>
     </div>
   );

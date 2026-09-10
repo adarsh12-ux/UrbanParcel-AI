@@ -14,6 +14,7 @@ import { ParcelDetailPage } from './pages/ParcelDetailPage';
 import { AnalysisPage } from './pages/AnalysisPage';
 import { ExportPage } from './pages/ExportPage';
 import { EmployeeManagementPage } from './pages/EmployeeManagementPage';
+import { CadastralImportPage } from './pages/CadastralImportPage';
 import { Project } from './types';
 
 const AuthenticatedWorkspace: React.FC = () => {
@@ -30,6 +31,7 @@ const AuthenticatedWorkspace: React.FC = () => {
           <Route path="/projects/:id/upload" element={<DroneUploadPage />} />
           <Route path="/projects/:id/processing" element={<AIProcessingPage />} />
           <Route path="/projects/:id/map" element={<GISMapPage />} />
+          <Route path="/projects/:id/cadastral-import" element={<CadastralImportPage />} />
           <Route path="/projects/:id/parcel/:parcelId" element={<ParcelDetailPage />} />
           <Route path="/projects/:id/analysis" element={<AnalysisPage />} />
           <Route path="/projects/:id/export" element={<ExportPage />} />

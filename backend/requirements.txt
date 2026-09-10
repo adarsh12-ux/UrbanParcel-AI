@@ -1,0 +1,15 @@
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+python-dotenv==1.0.1
+numpy==2.2.2
+requests==2.32.3
+Pillow==11.1.0
+rasterio==1.4.3
+geopandas==1.0.1
+pyproj==3.7.0
+shapely==2.0.7
+scikit-image==0.25.0
+supabase==2.11.0
+torch==2.6.0
+transformers==4.47.1
